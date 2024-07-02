@@ -1,0 +1,10 @@
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/libidna-2f849f51b6fe7607.rmeta: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/libidna-2f849f51b6fe7607.rlib: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/idna-2f849f51b6fe7607.d: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs:

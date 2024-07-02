@@ -1,0 +1,1 @@
+/home/gabriel-mizuno/Área\ de\ trabalho/Gabriel/UNB/8\ Semestre/LP/Projeto_LP/rust_backend/target/debug/rust_backend: /home/gabriel-mizuno/Área\ de\ trabalho/Gabriel/UNB/8\ Semestre/LP/Projeto_LP/rust_backend/src/main.rs

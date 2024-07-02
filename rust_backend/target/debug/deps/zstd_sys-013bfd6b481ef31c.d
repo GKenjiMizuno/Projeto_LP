@@ -1,0 +1,9 @@
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/libzstd_sys-013bfd6b481ef31c.rmeta: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zstd.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zdict.rs
+
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/libzstd_sys-013bfd6b481ef31c.rlib: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zstd.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zdict.rs
+
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/zstd_sys-013bfd6b481ef31c.d: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zstd.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zdict.rs
+
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/lib.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zstd.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zstd-sys-2.0.11+zstd.1.5.6/src/bindings_zdict.rs:

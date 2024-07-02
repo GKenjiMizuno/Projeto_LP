@@ -1,0 +1,10 @@
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/libactix_rt-fb1ead3ab59cf5ca.rmeta: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/arbiter.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/runtime.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/system.rs
+
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/libactix_rt-fb1ead3ab59cf5ca.rlib: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/arbiter.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/runtime.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/system.rs
+
+/home/gabriel-mizuno/Área de trabalho/Gabriel/UNB/8 Semestre/LP/Projeto_LP/rust_backend/target/debug/deps/actix_rt-fb1ead3ab59cf5ca.d: /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/lib.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/arbiter.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/runtime.rs /home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/system.rs
+
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/lib.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/arbiter.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/runtime.rs:
+/home/gabriel-mizuno/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-rt-2.10.0/src/system.rs:

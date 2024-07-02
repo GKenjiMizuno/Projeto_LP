@@ -1,0 +1,22 @@
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: grey;
+}
+
+.container {
+    background-color: rgb(75, 75, 75);
+    width: 800px;
+    height: 500px;
+    padding: 15px;
+}
+
+.container-header{
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
