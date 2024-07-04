@@ -1,7 +1,8 @@
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer, Responder};
+use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use serde::{Serialize, Deserialize};
-use std::{sync::Mutex, collections::HashMap};
+use std::sync::Mutex;
+use std::collections::HashMap;
 
 #[derive(Serialize)]
 struct AutomacaoResidencial {
@@ -12,7 +13,7 @@ struct AutomacaoResidencial {
     robo: bool,
     cafeteira: bool,
     ar_condicionado: bool,
-    aquecedor: bool
+    aquecedor: bool,
 }
 
 #[derive(Deserialize)]
@@ -32,6 +33,23 @@ struct ResponseData {
     message: String,
 }
 
+#[derive(Deserialize)]
+struct LoginRequest {
+    password: String,
+}
+
+#[derive(Serialize)]
+struct LoginResponse {
+    message: String,
+    authenticated: bool,
+    devices_status: String,
+}
+
+struct AppState {
+    automacao_residencial: AutomacaoResidencial,
+    correct_password: String,
+}
+
 impl AutomacaoResidencial {
     fn new() -> Self {
         Self {
@@ -42,54 +60,8 @@ impl AutomacaoResidencial {
             robo: false,
             cafeteira: false,
             ar_condicionado: false,
-            aquecedor: false
+            aquecedor: false,
         }
-    }
-
-    fn teclado(&mut self, senha: u32) {
-        let senha_correta = 1234;
-
-        if senha == senha_correta {
-            self.luz = true;
-            self.tranca = true;
-            self.alarme = false;
-            println!("Senha correta!");
-        } else {
-            println!("Senha incorreta! Tente novamente.");
-        }
-    }
-
-    fn termostato (&mut self, temperatura: f32) {
-        let temperatura_min:f32 = 15.0;
-        let temperatura_max:f32 = 25.0;
-
-        if temperatura < temperatura_min {
-            self.ar_condicionado = false;
-            self.aquecedor = true;
-        } else if temperatura > temperatura_max {
-            self.ar_condicionado = true;
-            self.aquecedor = false;
-        }
-    }
-
-    fn return_data(&self) -> HashMap<String, bool>{
-        let mut data = HashMap::new();
-        data.insert(String::from("luz"), self.luz);
-        data.insert(String::from("tranca"), self.tranca);
-        data.insert(String::from("alarme"), self.alarme);
-        data.insert(String::from("cortinas"), self.cortinas);
-        data.insert(String::from("robo"), self.robo);
-        data.insert(String::from("cafeteira"), self.cafeteira);
-        data.insert(String::from("ar condicionado"), self.ar_condicionado);
-        data.insert(String::from("aquecedor"), self.aquecedor);
-        data
-    }
-
-    fn to_message(&self) -> String {
-        format!(
-            "Luz: {}, Tranca: {}, Alarme: {}, Cortinas: {}, Robo: {}, Cafeteira: {}, Ar Condicionado: {}, Aquecedor: {}",
-            self.luz, self.tranca, self.alarme, self.cortinas, self.robo, self.cafeteira, self.ar_condicionado, self.aquecedor
-        )
     }
 
     fn update(&mut self, updates: UpdateData) {
@@ -117,32 +89,72 @@ impl AutomacaoResidencial {
         if let Some(aquecedor) = updates.aquecedor {
             self.aquecedor = aquecedor;
         }
-        
     }
 
+    fn return_data(&self) -> HashMap<String, bool> {
+        let mut data = HashMap::new();
+        data.insert(String::from("luz"), self.luz);
+        data.insert(String::from("tranca"), self.tranca);
+        data.insert(String::from("alarme"), self.alarme);
+        data.insert(String::from("cortinas"), self.cortinas);
+        data.insert(String::from("robo"), self.robo);
+        data.insert(String::from("cafeteira"), self.cafeteira);
+        data.insert(String::from("ar condicionado"), self.ar_condicionado);
+        data.insert(String::from("aquecedor"), self.aquecedor);
+        data
+    }
+
+    fn to_message(&self) -> String {
+        format!(
+            "Luz: {}, Tranca: {}, Alarme: {}, Cortinas: {}, Robo: {}, Cafeteira: {}, Ar Condicionado: {}, Aquecedor: {}",
+            self.luz, self.tranca, self.alarme, self.cortinas, self.robo, self.cafeteira, self.ar_condicionado, self.aquecedor
+        )
+    }
 }
 
-async fn get_data(data: web::Data<Mutex<AutomacaoResidencial>>) -> impl Responder {
-    let sistema = data.lock().unwrap();
-    let message = sistema.to_message();
+async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
+    let state = data.lock().unwrap();
+    let message = state.automacao_residencial.to_message();
     web::Json(ResponseData { message })
 }
 
-async fn update_data(data: web::Data<Mutex<AutomacaoResidencial>>, new_data: web::Json<UpdateData>) -> impl Responder {
-    let mut sistema = data.lock().unwrap();
-    sistema.update(new_data.into_inner());
-    web::Json(sistema.return_data())
+async fn update_data(data: web::Data<Mutex<AppState>>, new_data: web::Json<UpdateData>) -> impl Responder {
+    let mut state = data.lock().unwrap();
+    state.automacao_residencial.update(new_data.into_inner());
+    web::Json(state.automacao_residencial.return_data())
+}
+
+async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>) -> impl Responder {
+    let state = state.lock().unwrap();
+    if data.password == state.correct_password {
+        HttpResponse::Ok().json(LoginResponse {
+            message: String::from("Login successful"),
+            authenticated: true,
+            devices_status: state.automacao_residencial.to_message(),
+        })
+    } else {
+        HttpResponse::Unauthorized().json(LoginResponse {
+            message: String::from("Invalid password"),
+            authenticated: false,
+            devices_status: String::new(),
+        })
+    }
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let automacao_residencial = web::Data::new(Mutex::new(AutomacaoResidencial::new()));
+    let state = web::Data::new(Mutex::new(AppState {
+        automacao_residencial: AutomacaoResidencial::new(),
+        correct_password: String::from("1234"),
+    }));
+
     HttpServer::new(move || {
         App::new()
-            .app_data(automacao_residencial.clone()) // Compartilha o estado
-            .wrap(Cors::permissive())  // Adiciona middleware CORS
+            .app_data(state.clone())
+            .wrap(Cors::permissive())
             .route("/api/data", web::get().to(get_data))
             .route("/api/update", web::put().to(update_data))
+            .route("/api/login", web::post().to(login))
     })
     .bind("127.0.0.1:8080")?
     .run()
