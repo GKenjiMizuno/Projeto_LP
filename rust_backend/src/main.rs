@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use std::sync::Mutex;
 use std::collections::HashMap;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]  // Adicione Clone aqui
 struct AutomacaoResidencial {
     luz: bool,
     tranca: bool,
@@ -42,7 +42,7 @@ struct LoginRequest {
 struct LoginResponse {
     message: String,
     authenticated: bool,
-    devices_status: String,
+    devices_status: AutomacaoResidencial,
 }
 
 struct AppState {
@@ -53,7 +53,7 @@ struct AppState {
 impl AutomacaoResidencial {
     fn new() -> Self {
         Self {
-            luz: false,
+            luz: true,
             tranca: false,
             alarme: true,
             cortinas: false,
@@ -130,13 +130,13 @@ async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>)
         HttpResponse::Ok().json(LoginResponse {
             message: String::from("Login successful"),
             authenticated: true,
-            devices_status: state.automacao_residencial.to_message(),
+            devices_status: state.automacao_residencial.clone(), // Agora você pode usar clone
         })
     } else {
         HttpResponse::Unauthorized().json(LoginResponse {
             message: String::from("Invalid password"),
             authenticated: false,
-            devices_status: String::new(),
+            devices_status: AutomacaoResidencial::new(),
         })
     }
 }

@@ -20,6 +20,7 @@ const Login = () => {
 
     const data = await response.json();
     if (response.ok) {
+      console.log('Dados recebidos:', data); // Adicione um log para verificar a resposta
       navigate('/home', { state: { message: data.message, devicesStatus: data.devices_status } });
     } else {
       setError(data.message);
