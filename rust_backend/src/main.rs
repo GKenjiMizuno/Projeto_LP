@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use serde::{Serialize, Deserialize};
-use std::{collections::HashMap, sync::Mutex, env, thread, time::Duration};
+use std::{collections::HashMap, env, sync::Mutex, thread, time::Duration};
 use rand::{self, rngs::ThreadRng, Rng};
 extern crate env_logger;
 
@@ -40,6 +40,32 @@ impl Clock {
     }
 }
 
+#[derive(Serialize, Clone)]
+struct Temperatura {
+    temp: f64,
+}
+
+impl Temperatura {
+    fn new() -> Self {
+        let temp_inicial: f64 = rand::thread_rng().gen_range(10.0..30.0);
+        Self {
+            temp: temp_inicial
+        }
+    }
+
+    fn alterar_temp(&mut self, hora_atual: i32) -> f64 {
+        let variacao_max: f64 = 2.0;
+
+        let alteracao: f64 = if (6..18).contains(&hora_atual) {
+            rand::thread_rng().gen_range(0.0..variacao_max)
+        } else {
+            rand::thread_rng().gen_range(-variacao_max..0.0)
+        };
+
+        self.temp += alteracao;
+        self.temp
+    }
+}
 #[derive(Deserialize)]
 struct UpdateData {
     luz: Option<bool>,
@@ -57,6 +83,7 @@ struct ResponseData {
     message: String,
     devices_status: HashMap<String, bool>,
     hora_atual: i32,
+    temp_atual: f64,
 }
 
 #[derive(Deserialize)]
@@ -70,12 +97,14 @@ struct LoginResponse {
     authenticated: bool,
     devices_status: AutomacaoResidencial,
     hora_atual: Clock,
+    temp_atual: Temperatura,
 }
 
 struct AppState {
     automacao_residencial: AutomacaoResidencial,
     correct_password: String,
     clock_atual: Clock,
+    temperatura_atual: Temperatura,
 }
 
 impl AutomacaoResidencial {
@@ -138,6 +167,19 @@ impl AutomacaoResidencial {
         self.alarme = false;
     }
 
+    fn termostato (&mut self, temperatura: f64) {
+        let temperatura_min:f64 = 18.0;
+        let temperatura_max:f64 = 25.0;
+
+        if temperatura < temperatura_min {
+            self.ar_condicionado = false;
+            self.aquecedor = true;
+        } else if temperatura > temperatura_max {
+            self.ar_condicionado = true;
+            self.aquecedor = false;
+        }
+    }
+
     fn to_message(&self) -> String {
         format!(
             "Luz: {}, Tranca: {}, Alarme: {}, Cortinas: {}, Robo: {}, Cafeteira: {}, Ar Condicionado: {}, Aquecedor: {}",
@@ -152,7 +194,8 @@ async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
     web::Json(ResponseData { 
         message,
         devices_status: state.automacao_residencial.return_data(),
-        hora_atual: state.clock_atual.hour
+        hora_atual: state.clock_atual.hour,
+        temp_atual: state.temperatura_atual.temp,
     })
 }
 
@@ -171,6 +214,7 @@ async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>)
             authenticated: true,
             devices_status: state.automacao_residencial.clone(),
             hora_atual: state.clock_atual.clone(),
+            temp_atual: state.temperatura_atual.clone(),
         })
     } else {
         HttpResponse::Unauthorized().json(LoginResponse {
@@ -178,6 +222,7 @@ async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>)
             authenticated: false,
             devices_status: AutomacaoResidencial::new(),
             hora_atual: Clock::new(),
+            temp_atual: Temperatura::new(),
         })
     }
 }
@@ -192,15 +237,26 @@ async fn main() -> std::io::Result<()> {
         automacao_residencial: AutomacaoResidencial::new(),
         correct_password: String::from("1234"),
         clock_atual: Clock::new(),
+        temperatura_atual: Temperatura::new(),
     }));
     
     // Spawn a background thread to increment the clock every 5 seconds
     let state_clone = state.clone();
     thread::spawn(move || {
         loop {
-            thread::sleep(Duration::from_secs(5));
+            thread::sleep(Duration::from_secs(1));
             let mut state = state_clone.lock().unwrap();
             state.clock_atual.increment_hour();
+            let hora_atual = state.clock_atual.hour;
+            state.temperatura_atual.alterar_temp(hora_atual);
+            let ultima_temp = state.temperatura_atual.temp;
+            state.automacao_residencial.termostato(ultima_temp);
+            println!("Hora: {}", hora_atual);
+            println!("Temperatura: {}", ultima_temp);
+            let data = state.automacao_residencial.return_data();
+            for (key, value) in &data {
+                println!("{}: {}", key, value);
+            }
         }
     });
 
