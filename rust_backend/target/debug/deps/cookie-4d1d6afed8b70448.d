@@ -1,0 +1,11 @@
+/home/lucogds/UnB/UnB_2024-1_LP_Projeto/Projeto_LP/rust_backend/target/debug/deps/libcookie-4d1d6afed8b70448.rmeta: /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/lib.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/builder.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/parse.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/jar.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/delta.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/draft.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/expiration.rs
+
+/home/lucogds/UnB/UnB_2024-1_LP_Projeto/Projeto_LP/rust_backend/target/debug/deps/cookie-4d1d6afed8b70448.d: /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/lib.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/builder.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/parse.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/jar.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/delta.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/draft.rs /home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/expiration.rs
+
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/lib.rs:
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/builder.rs:
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/parse.rs:
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/jar.rs:
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/delta.rs:
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/draft.rs:
+/home/lucogds/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cookie-0.16.2/src/expiration.rs:

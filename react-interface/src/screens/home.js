@@ -18,8 +18,6 @@ const Home = () => {
 
   const { message, devicesStatus } = location.state;
 
-  console.log('Estado da Luz:', devicesStatus.luz); // Log do estado da luz
-  console.log('Estado dos Dispositivos:', devicesStatus); // Log do objeto completo de dispositivos
 
   const createStatusMessage = (status) => {
     return `Luz: ${status.luz ? 'Ligada' : 'Desligada'}, 
@@ -29,7 +27,7 @@ const Home = () => {
             Robo: ${status.robo ? 'Ligado' : 'Desligado'}, 
             Cafeteira: ${status.cafeteira ? 'Ligada' : 'Desligada'}, 
             Ar Condicionado: ${status.ar_condicionado ? 'Ligado' : 'Desligado'}, 
-            Aquecedor: ${status.aquecedor ? 'Ligado' : 'Desligado'}`;
+            Aquecedor: ${status.aquecedor ? 'Ligado' : 'Desligado'},`;
   };
 
   const statusMessage = createStatusMessage(devicesStatus);
@@ -39,7 +37,6 @@ const Home = () => {
       <div className="container">
         <div className="container-header">
           <p>{statusMessage}</p>
-          <p>Luz: {devicesStatus.luz ? 'Ligada' : 'Desligada'}</p>
         </div>
       </div>
     </div>

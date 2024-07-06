@@ -1,10 +1,11 @@
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use serde::{Serialize, Deserialize};
-use std::sync::Mutex;
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Mutex, env, thread, time::Duration};
+use rand::{self, rngs::ThreadRng, Rng};
+extern crate env_logger;
 
-#[derive(Serialize, Clone)]  // Adicione Clone aqui
+#[derive(Serialize, Clone)]
 struct AutomacaoResidencial {
     luz: bool,
     tranca: bool,
@@ -14,6 +15,29 @@ struct AutomacaoResidencial {
     cafeteira: bool,
     ar_condicionado: bool,
     aquecedor: bool,
+}
+
+#[derive(Serialize, Clone)]
+struct Clock {
+    hour: i32,
+}
+
+impl Clock {
+    fn new() -> Self {
+        let mut rng: ThreadRng = rand::thread_rng();
+        let rand_hour: i32 = rng.gen_range(0..24);
+        Self {
+            hour: rand_hour,
+        }
+    }
+
+    fn increment_hour(&mut self) {
+        if self.hour < 24 {
+            self.hour += 1
+        } else {
+            self.hour = 0
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -31,6 +55,8 @@ struct UpdateData {
 #[derive(Serialize)]
 struct ResponseData {
     message: String,
+    devices_status: HashMap<String, bool>,
+    hora_atual: i32,
 }
 
 #[derive(Deserialize)]
@@ -43,11 +69,13 @@ struct LoginResponse {
     message: String,
     authenticated: bool,
     devices_status: AutomacaoResidencial,
+    hora_atual: Clock,
 }
 
 struct AppState {
     automacao_residencial: AutomacaoResidencial,
     correct_password: String,
+    clock_atual: Clock,
 }
 
 impl AutomacaoResidencial {
@@ -104,6 +132,12 @@ impl AutomacaoResidencial {
         data
     }
 
+    fn acesso_garantido(&mut self) {
+        self.luz = true;
+        self.tranca = true;
+        self.alarme = false;
+    }
+
     fn to_message(&self) -> String {
         format!(
             "Luz: {}, Tranca: {}, Alarme: {}, Cortinas: {}, Robo: {}, Cafeteira: {}, Ar Condicionado: {}, Aquecedor: {}",
@@ -115,7 +149,11 @@ impl AutomacaoResidencial {
 async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
     let state = data.lock().unwrap();
     let message = state.automacao_residencial.to_message();
-    web::Json(ResponseData { message })
+    web::Json(ResponseData { 
+        message,
+        devices_status: state.automacao_residencial.return_data(),
+        hora_atual: state.clock_atual.hour
+    })
 }
 
 async fn update_data(data: web::Data<Mutex<AppState>>, new_data: web::Json<UpdateData>) -> impl Responder {
@@ -125,28 +163,46 @@ async fn update_data(data: web::Data<Mutex<AppState>>, new_data: web::Json<Updat
 }
 
 async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>) -> impl Responder {
-    let state = state.lock().unwrap();
+    let mut state = state.lock().unwrap();
     if data.password == state.correct_password {
+        state.automacao_residencial.acesso_garantido();
         HttpResponse::Ok().json(LoginResponse {
             message: String::from("Login successful"),
             authenticated: true,
-            devices_status: state.automacao_residencial.clone(), // Agora você pode usar clone
+            devices_status: state.automacao_residencial.clone(),
+            hora_atual: state.clock_atual.clone(),
         })
     } else {
         HttpResponse::Unauthorized().json(LoginResponse {
             message: String::from("Invalid password"),
             authenticated: false,
             devices_status: AutomacaoResidencial::new(),
+            hora_atual: Clock::new(),
         })
     }
 }
 
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env::set_var("RUST_LOG", "debug");
+    env_logger::init();
+
     let state = web::Data::new(Mutex::new(AppState {
         automacao_residencial: AutomacaoResidencial::new(),
         correct_password: String::from("1234"),
+        clock_atual: Clock::new(),
     }));
+    
+    // Spawn a background thread to increment the clock every 5 seconds
+    let state_clone = state.clone();
+    thread::spawn(move || {
+        loop {
+            thread::sleep(Duration::from_secs(5));
+            let mut state = state_clone.lock().unwrap();
+            state.clock_atual.increment_hour();
+        }
+    });
 
     HttpServer::new(move || {
         App::new()
