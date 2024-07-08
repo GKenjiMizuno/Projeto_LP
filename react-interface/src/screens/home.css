@@ -20,3 +20,16 @@ body {
     display: flex;
 }
 
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .status-item {
+    background: #e0e0e0;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+  }

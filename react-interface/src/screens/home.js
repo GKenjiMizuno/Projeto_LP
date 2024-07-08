@@ -1,42 +1,86 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './home.css';
 
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [devicesStatus, setDevicesStatus] = useState(location.state?.devicesStatus || {});
+  const [horaAtual, setHoraAtual] = useState(location.state?.hora_atual || { hour: 0 });
+  const [tempAtual, setTempAtual] = useState(location.state?.temp_atual || { temp : 12})
 
   useEffect(() => {
     if (!location.state) {
       navigate('/');
     }
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/data');
+        const data = await response.json();
+        console.log('Dados recebidos:', data); // Log para verificar a resposta
+        setDevicesStatus(data.devices_status);
+        setHoraAtual(data.hora_atual);
+        setTempAtual(data.temp_atual);
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+    
+    fetchData(); // Chamada inicial para buscar os dados assim que o componente monta
+    const interval = setInterval(fetchData, 5000); // Atualiza a cada 5 segundos
+
+    return () => clearInterval(interval); // Limpa o intervalo quando o componente desmonta
   }, [location, navigate]);
 
   if (!location.state) {
     return null; // ou renderize um carregando enquanto redireciona
   }
 
-  const { message, devicesStatus } = location.state;
-
-
   const createStatusMessage = (status) => {
-    return `Luz: ${status.luz ? 'Ligada' : 'Desligada'}, 
-            Tranca: ${status.tranca ? 'Trancada' : 'Destrancada'}, 
-            Alarme: ${status.alarme ? 'Ativado' : 'Desativado'}, 
-            Cortinas: ${status.cortinas ? 'Abertas' : 'Fechadas'}, 
-            Robo: ${status.robo ? 'Ligado' : 'Desligado'}, 
-            Cafeteira: ${status.cafeteira ? 'Ligada' : 'Desligada'}, 
-            Ar Condicionado: ${status.ar_condicionado ? 'Ligado' : 'Desligado'}, 
-            Aquecedor: ${status.aquecedor ? 'Ligado' : 'Desligado'},`;
+    return (
+      <div className="status-grid">
+        <div className="status-item">Luz: {status.luz ? 'Ligada' : 'Desligada'}</div>
+        <div className="status-item">Tranca: {status.tranca ? 'Trancada' : 'Destrancada'}</div>
+        <div className="status-item">Alarme: {status.alarme ? 'Ativado' : 'Desativado'}</div>
+        <div className="status-item">Cortinas: {status.cortinas ? 'Abertas' : 'Fechadas'}</div>
+        <div className="status-item">Robo: {status.robo ? 'Ligado' : 'Desligado'}</div>
+        <div className="status-item">Cafeteira: {status.cafeteira ? 'Ligada' : 'Desligada'}</div>
+        <div className="status-item">Ar Condicionado: {status.ar_condicionado ? 'Ligado' : 'Desligado'}</div>
+        <div className="status-item">Aquecedor: {status.aquecedor ? 'Ligado' : 'Desligado'}</div>
+      </div>
+    );
   };
 
+
+
+  const createClockMessage = (hour) => {
+    return  (
+      <div className='status-grid'>
+        <div className='status-item'>Hora Atual: {hour}</div>
+      </div>
+    );
+  };
+
+  const createTemperatureMessage = (temp) => {
+    return (
+      <div className='status-grid'>
+        <div className='status-item'>Temperatura Atual: {temp.toFixed(2)}</div>
+      </div>
+    )
+  }
+
   const statusMessage = createStatusMessage(devicesStatus);
+  const clockMessage = createClockMessage(horaAtual);
+  const tempMessage  = createTemperatureMessage(tempAtual);
 
   return (
     <div className="body">
       <div className="container">
         <div className="container-header">
           <p>{statusMessage}</p>
+          <p>{clockMessage}</p>
+          <p>{tempMessage}</p>
         </div>
       </div>
     </div>
