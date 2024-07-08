@@ -1,1 +1,1 @@
-/home/lucogds/UnB/UnB_2024-1_LP_Projeto/Projeto_LP/rust_backend/target/debug/rust_backend: /home/lucogds/UnB/UnB_2024-1_LP_Projeto/Projeto_LP/rust_backend/src/main.rs
+C:\Users\lucog\.vscode\UnB\Projeto_LP\Projeto_LP\rust_backend\target\debug\rust_backend.exe: C:\Users\lucog\.vscode\UnB\Projeto_LP\Projeto_LP\rust_backend\src\main.rs
