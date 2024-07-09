@@ -6,8 +6,8 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [devicesStatus, setDevicesStatus] = useState(location.state?.devicesStatus || {});
-  const [horaAtual, setHoraAtual] = useState(location.state?.hora_atual || { hour: 0 });
-  const [tempAtual, setTempAtual] = useState(location.state?.temp_atual || { temp : 12})
+  const [horaAtual, setHoraAtual] = useState(location.state?.hora_atual || 0 );
+  const [tempAtual, setTempAtual] = useState(location.state?.temp_atual || 12)
 
   useEffect(() => {
     if (!location.state) {
@@ -54,21 +54,26 @@ const Home = () => {
 
 
 
-  const createClockMessage = (hour) => {
-    return  (
+  const createClockMessage = (hourData) => {
+    return (
       <div className='status-grid'>
-        <div className='status-item'>Hora Atual: {hour}</div>
+        <div className='status-item'>Hora Atual: {hourData}</div>
+      </div>
+    );
+  };
+  
+
+  const createTemperatureMessage = (temp) => {
+    const temperature = Number(temp);
+    return (
+      <div className='status-grid'>
+        <div className='status-item'>
+          Temperatura Atual: {isNaN(temperature) ? 'Valor inválido' : temperature.toFixed(2)}
+        </div>
       </div>
     );
   };
 
-  const createTemperatureMessage = (temp) => {
-    return (
-      <div className='status-grid'>
-        <div className='status-item'>Temperatura Atual: {temp.toFixed(2)}</div>
-      </div>
-    )
-  }
 
   const statusMessage = createStatusMessage(devicesStatus);
   const clockMessage = createClockMessage(horaAtual);

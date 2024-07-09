@@ -281,12 +281,12 @@ async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>)
         // Marca o usuário como autenticado.
         state.authenticated = true;
         // Retorna uma resposta HTTP positiva com os dados relevantes.
-        HttpResponse::Ok().json(LoginResponse {
+        HttpResponse::Ok().json(ResponseData { 
             message: String::from("Login successful"),
-            authenticated: true,
-            devices_status: state.automacao_residencial.clone(),
-            hora_atual: state.clock_atual.clone(),
-            temp_atual: state.temperatura_atual.clone(),
+            devices_status: state.automacao_residencial.return_data(),
+            hora_atual: state.clock_atual.hour,
+            temp_atual: state.temperatura_atual.temp,
+            authenticated: state.authenticated,
         })
     } else {
         // Retorna uma resposta HTTP de não autorizado se a senha for incorreta.
