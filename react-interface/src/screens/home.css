@@ -1,35 +1,66 @@
-
-
+/* src/pages/Home.css */
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: grey;
-}
-
-.container {
+  }
+  
+  .container {
     background-color: rgb(75, 75, 75);
     width: 800px;
     height: 500px;
     padding: 15px;
-}
-
-.container-header{
-    justify-content: center;
-    align-items: center;
-    display: flex;
-}
-
-.status-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
   }
   
-  .status-item {
-    background: #e0e0e0;
+  .container-header {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 20px;
     padding: 10px;
-    border-radius: 5px;
-    text-align: center;
+    background-color: rgb(100, 100, 100);
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
   }
+  
+  .devices-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "tranca iluminacao"
+      "alarme robo"
+      "cafeteira arCondicionado"
+      "cortinas aquecedor";
+    gap: 10px;
+  }
+  
+  .device-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .device-button.active {
+    background-color: green;
+  }
+  
+  .device-button.inactive {
+    background-color: red;
+  }
+  
+  .device-button:nth-child(1) { grid-area: tranca; }
+  .device-button:nth-child(2) { grid-area: iluminacao; }
+  .device-button:nth-child(3) { grid-area: alarme; }
+  .device-button:nth-child(4) { grid-area: robo; }
+  .device-button:nth-child(5) { grid-area: cafeteira; }
+  .device-button:nth-child(6) { grid-area: arCondicionado; }
+  .device-button:nth-child(7) { grid-area: cortinas; }
+  .device-button:nth-child(8) { grid-area: aquecedor; }
+  
