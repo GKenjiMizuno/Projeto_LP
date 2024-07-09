@@ -7,19 +7,6 @@ use rand::{self, Rng};  // Biblioteca para geração de números aleatórios.
 use serde_json::json;  // Importação da macro json para facilitar a criação de objetos JSON.
 extern crate env_logger;  // Biblioteca para configuração de logs baseada em variáveis de ambiente.
 
-// Definição de uma estrutura de dados para representar o estado da automação residencial.
-#[derive(Serialize, Clone)]
-struct AutomacaoResidencial {
-    luz: bool,  // Estado da luz (ligada ou desligada).
-    tranca: bool,  // Estado da tranca (trancada ou destrancada).
-    alarme: bool,  // Estado do alarme (ativado ou desativado).
-    cortinas: bool,  // Estado das cortinas (abertas ou fechadas).
-    robo: bool,  // Estado do robô (ativo ou inativo).
-    cafeteira: bool,  // Estado da cafeteira (ligada ou desligada).
-    ar_condicionado: bool,  // Estado do ar-condicionado (ligado ou desligado).
-    aquecedor: bool,  // Estado do aquecedor (ligado ou desligado).
-}
-
 // Definição de uma estrutura de dados para representar um relógio simples.
 #[derive(Serialize, Clone)]
 struct Clock {
@@ -82,63 +69,20 @@ impl Temperatura {
         self.temp
     }
 }
-// Define uma estrutura para deserializar dados recebidos em requisições de atualização.
-#[derive(Deserialize)]
-struct UpdateData {
-    luz: Option<bool>,  // Opcional: estado da luz (true para ligada, false para desligada).
-    tranca: Option<bool>,  // Opcional: estado da tranca.
-    alarme: Option<bool>,  // Opcional: estado do alarme.
-    cortinas: Option<bool>,  // Opcional: estado das cortinas.
-    robo: Option<bool>,  // Opcional: estado do robô.
-    cafeteira: Option<bool>,  // Opcional: estado da cafeteira.
-    ar_condicionado: Option<bool>,  // Opcional: estado do ar-condicionado.
-    aquecedor: Option<bool>,  // Opcional: estado do aquecedor.
+
+// Definição de uma estrutura de dados para representar o estado da automação residencial.
+#[derive(Serialize, Clone)]
+struct AutomacaoResidencial {
+    luz: bool,  // Estado da luz (ligada ou desligada).
+    tranca: bool,  // Estado da tranca (trancada ou destrancada).
+    alarme: bool,  // Estado do alarme (ativado ou desativado).
+    cortinas: bool,  // Estado das cortinas (abertas ou fechadas).
+    robo: bool,  // Estado do robô (ativo ou inativo).
+    cafeteira: bool,  // Estado da cafeteira (ligada ou desligada).
+    ar_condicionado: bool,  // Estado do ar-condicionado (ligado ou desligado).
+    aquecedor: bool,  // Estado do aquecedor (ligado ou desligado).
 }
 
-// Define uma estrutura para serializar a resposta a ser enviada ao cliente.
-#[derive(Serialize)]
-struct ResponseData {
-    message: String,  // Mensagem descrevendo o resultado da operação ou status.
-    devices_status: HashMap<String, bool>,  // Estado atual dos dispositivos em forma de mapa.
-    hora_atual: i32,  // Hora atual no relógio do sistema.
-    temp_atual: f64,  // Temperatura atual no sistema.
-    authenticated: bool,  // Indica se o usuário está autenticado ou não.
-}
-
-// Define uma estrutura para deserializar dados de solicitação de login.
-#[derive(Deserialize)]
-struct LoginRequest {
-    password: String,  // Senha fornecida pelo usuário para tentativa de login.
-}
-
-// Define uma estrutura para deserializar dados de solicitação de logout.
-#[derive(Deserialize)]
-struct LogoutRequest {
-    authenticated: bool,  // Indica se o usuário está autenticado ou não no momento do logout.
-}
-
-// Define uma estrutura para serializar a resposta de login a ser enviada ao cliente.
-#[derive(Serialize)]
-struct LoginResponse {
-    message: String,  // Mensagem descrevendo o resultado do login.
-    authenticated: bool,  // Indica se o login foi bem-sucedido ou não.
-    devices_status: AutomacaoResidencial,  // Estado atual dos dispositivos na automação residencial.
-    hora_atual: Clock,  // Estado atual do relógio.
-    temp_atual: Temperatura,  // Estado atual da temperatura.
-}
-// Define uma estrutura chamada AppState que contém o estado geral da aplicação.
-struct AppState {
-    // Campo para armazenar o estado atual dos dispositivos de automação residencial.
-    automacao_residencial: AutomacaoResidencial,
-    // Campo para armazenar a senha correta necessária para autenticar um usuário.
-    correct_password: String,
-    // Campo que armazena o estado atual do relógio.
-    clock_atual: Clock,
-    // Campo que armazena a temperatura atual monitorada pelo sistema.
-    temperatura_atual: Temperatura,
-    // Campo booleano que indica se um usuário está autenticado ou não.
-    authenticated: bool,
-}
 // Implementação de métodos para a estrutura AutomacaoResidencial.
 impl AutomacaoResidencial {
     // Método construtor que inicializa os dispositivos com estados padrão.
@@ -243,6 +187,98 @@ impl AutomacaoResidencial {
     }
 }
 
+// Definição de uma estrutura de dados para representar se o dispositivo está bloquado ou desbloqueado. Se estiver bloqueado,
+// o dispositivo não pode ser atualizado.
+#[derive(Serialize, Clone)]
+struct LockDevice {
+    lock_luz: bool, // true: bloqueado. false: desbloqueado 
+    lock_tranca: bool,  
+    lock_alarme: bool,  
+    lock_cortinas: bool,  
+    lock_robo: bool,  
+    lock_cafeteira: bool,  
+    lock_ar_condicionado: bool,
+    lock_aquecedor: bool,  
+}
+
+// Implementação de métodos para a estrutura
+impl LockDevice {
+    // Método construtor que inicializa os dispositivos desbloqueados
+    fn new() -> Self {
+        Self {
+            lock_luz: false,  
+            lock_tranca: false,  
+            lock_alarme: false,  
+            lock_cortinas: false,  
+            lock_robo: false,  
+            lock_cafeteira: false,  
+            lock_ar_condicionado: false,
+            lock_aquecedor: false,  
+        }
+    }
+
+    // Método para atualizar o estado dos dispositivos com base em dados recebidos.
+    fn update(&mut self, updates: UpdateLockData) {
+        // Atualiza cada dispositivo se um novo valor foi fornecido.
+        updates.lock_luz.map(|lock_luz| self.lock_luz = lock_luz);
+        updates.lock_tranca.map(|lock_tranca| self.lock_tranca = lock_tranca);
+        updates.lock_alarme.map(|lock_alarme| self.lock_alarme = lock_alarme);
+        updates.lock_cortinas.map(|lock_cortinas| self.lock_cortinas = lock_cortinas);
+        updates.lock_robo.map(|lock_robo| self.lock_robo = lock_robo);
+        updates.lock_cafeteira.map(|lock_cafeteira| self.lock_cafeteira = lock_cafeteira);
+        updates.lock_ar_condicionado.map(|lock_ar_condicionado| self.lock_ar_condicionado = lock_ar_condicionado);
+        updates.lock_aquecedor.map(|lock_aquecedor| self.lock_aquecedor = lock_aquecedor);
+    }
+
+    fn device_is_locked(&self, device_to_update: UpdateData) -> Result<bool, String> {
+
+        if !device_to_update.luz.is_none(){
+            Ok(self.lock_luz)
+        } else if !device_to_update.tranca.is_none(){
+            Ok(self.lock_tranca)
+        } else if !device_to_update.alarme.is_none(){
+            Ok(self.lock_alarme)
+        } else if !device_to_update.cortinas.is_none(){
+            Ok(self.lock_cortinas)
+        } else if !device_to_update.robo.is_none(){
+            Ok(self.lock_robo)
+        } else if !device_to_update.cafeteira.is_none(){
+            Ok(self.lock_cafeteira)
+        } else if !device_to_update.ar_condicionado.is_none(){
+            Ok(self.lock_ar_condicionado)
+        } else if !device_to_update.aquecedor.is_none(){
+            Ok(self.lock_aquecedor)
+        } else {
+            Err("Item não fornecido".to_string())
+        }
+    }
+    // Método para retornar o estado atual dos dispositivos em formato de mapa.
+    fn return_data(&self) -> HashMap<String, bool> {
+        let mut data = HashMap::new();
+        // Insere o estado de cada dispositivo no mapa.
+        data.insert("luz".to_string(), self.lock_luz);
+        data.insert("tranca".to_string(), self.lock_tranca);
+        data.insert("alarme".to_string(), self.lock_alarme);
+        data.insert("cortinas".to_string(), self.lock_cortinas);
+        data.insert("robo".to_string(), self.lock_robo);
+        data.insert("cafeteira".to_string(), self.lock_cafeteira);
+        data.insert("ar condicionado".to_string(), self.lock_ar_condicionado);
+        data.insert("aquecedor".to_string(), self.lock_aquecedor);
+        data
+    }
+
+}
+
+// Define uma estrutura para serializar a resposta a ser enviada ao cliente.
+#[derive(Serialize)]
+struct ResponseData {
+    message: String,  // Mensagem descrevendo o resultado da operação ou status.
+    devices_status: HashMap<String, bool>,  // Estado atual dos dispositivos em forma de mapa.
+    hora_atual: i32,  // Hora atual no relógio do sistema.
+    temp_atual: f64,  // Temperatura atual no sistema.
+    authenticated: bool,  // Indica se o usuário está autenticado ou não.
+}
+
 // Função assíncrona que responde com os dados atuais do estado da automação residencial.
 async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
     // Bloqueia o estado compartilhado da aplicação para leitura.
@@ -260,14 +296,89 @@ async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
     })
 }
 
+// Define uma estrutura para deserializar dados recebidos em requisições de atualização.
+#[derive(Deserialize, Clone)]
+struct UpdateData {
+    luz: Option<bool>,  // Opcional: estado da luz (true para ligada, false para desligada).
+    tranca: Option<bool>,  // Opcional: estado da tranca.
+    alarme: Option<bool>,  // Opcional: estado do alarme.
+    cortinas: Option<bool>,  // Opcional: estado das cortinas.
+    robo: Option<bool>,  // Opcional: estado do robô.
+    cafeteira: Option<bool>,  // Opcional: estado da cafeteira.
+    ar_condicionado: Option<bool>,  // Opcional: estado do ar-condicionado.
+    aquecedor: Option<bool>,  // Opcional: estado do aquecedor.
+}
+
 // Função assíncrona para atualizar os dados dos dispositivos na automação residencial.
 async fn update_data(state: web::Data<Mutex<AppState>>, new_data: web::Json<UpdateData>) -> impl Responder {
+    // Extrai os dados uma vez e reutiliza esta variável.
+    let new_data_inner = new_data.into_inner();
+    // Resultado da verificação se o dispostivo está bloqueado ou não
+    let result= device_is_locked(state.clone(), new_data_inner.clone()).await;
     // Bloqueia o estado para modificação.
     let mut state = state.lock().unwrap();
-    // Atualiza o estado dos dispositivos com os novos dados recebidos.
-    state.automacao_residencial.update(new_data.into_inner());
-    // Retorna o estado atualizado dos dispositivos como JSON.
+    if !result{
+        // Atualiza o estado dos dispositivos com os novos dados recebidos.
+        state.automacao_residencial.update(new_data_inner);
+        // Retorna o estado atualizado dos dispositivos como JSON.
+    }
     web::Json(state.automacao_residencial.return_data())
+}
+
+
+// Define uma estrutura para deserializar dados recebidos em requisições de atualização.
+#[derive(Deserialize)]
+struct UpdateLockData {
+    lock_luz: Option<bool>,  // Opcional: estado do bloqueio da luz (true para bloqueado, false para desbloqueado).
+    lock_tranca: Option<bool>,  // Opcional: estado do bloqueio da tranca.
+    lock_alarme: Option<bool>,  // Opcional: estado do bloqueio do alarme.
+    lock_cortinas: Option<bool>,  // Opcional: estado do bloqueio das cortinas.
+    lock_robo: Option<bool>,  // Opcional: estado do bloqueio do robô.
+    lock_cafeteira: Option<bool>,  // Opcional: estado do bloqueio da cafeteira.
+    lock_ar_condicionado: Option<bool>,  // Opcional: estado do bloqueio do ar-condicionado.
+    lock_aquecedor: Option<bool>,  // Opcional: estado do bloqueio do aquecedor.
+}
+
+async fn device_is_locked(state: web::Data<Mutex<AppState>>, new_data: UpdateData) -> bool {
+    let state = state.lock().unwrap();
+    let result = state.lock_devices.device_is_locked(new_data);
+    let b = match result {
+        Ok(true) => true,
+        Ok(false) => false,
+        Err(_msg) => true
+    };
+    return b;
+}
+// Função assíncrona para bloquear o dispositivo
+async fn lock_device(state: web::Data<Mutex<AppState>>, new_data: web::Json<UpdateLockData>) -> impl Responder {
+    // Bloqueia o estado para modificação.
+    let mut state= state.lock().unwrap();
+    // Bloqueia o dispositivo para o dispositivo não ser atualizado
+    state.lock_devices.update(new_data.into_inner());
+    // Retorna o estado atualizado dos dispositivos bloqueados como JSON
+    web::Json(state.lock_devices.return_data())
+}
+
+// Define uma estrutura para deserializar dados de solicitação de login.
+#[derive(Deserialize)]
+struct LoginRequest {
+    password: String,  // Senha fornecida pelo usuário para tentativa de login.
+}
+
+// Define uma estrutura para deserializar dados de solicitação de logout.
+#[derive(Deserialize)]
+struct LogoutRequest {
+    authenticated: bool,  // Indica se o usuário está autenticado ou não no momento do logout.
+}
+
+// Define uma estrutura para serializar a resposta de login a ser enviada ao cliente.
+#[derive(Serialize)]
+struct LoginResponse {
+    message: String,  // Mensagem descrevendo o resultado do login.
+    authenticated: bool,  // Indica se o login foi bem-sucedido ou não.
+    devices_status: AutomacaoResidencial,  // Estado atual dos dispositivos na automação residencial.
+    hora_atual: Clock,  // Estado atual do relógio.
+    temp_atual: Temperatura,  // Estado atual da temperatura.
 }
 
 // Função assíncrona para processar uma solicitação de login.
@@ -319,6 +430,22 @@ async fn logout(request: web::Json<LogoutRequest>, state: web::Data<Mutex<AppSta
     }
 }
 
+// Define uma estrutura chamada AppState que contém o estado geral da aplicação.
+struct AppState {
+    // Campo para armazenar o estado atual dos dispositivos de automação residencial.
+    automacao_residencial: AutomacaoResidencial,
+    // Campo para armazenar o estado atual do bloqueio dos dispositivos.
+    lock_devices: LockDevice,
+    // Campo para armazenar a senha correta necessária para autenticar um usuário.
+    correct_password: String,
+    // Campo que armazena o estado atual do relógio.
+    clock_atual: Clock,
+    // Campo que armazena a temperatura atual monitorada pelo sistema.
+    temperatura_atual: Temperatura,
+    // Campo booleano que indica se um usuário está autenticado ou não.
+    authenticated: bool,
+}
+
 // Anotação para indicar que a função `main` deve ser executada em um ambiente assíncrono usando `actix_web`.
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -330,12 +457,13 @@ async fn main() -> std::io::Result<()> {
     // Criação e inicialização do estado compartilhado da aplicação usando Mutex para acesso seguro entre threads.
     let state = web::Data::new(Mutex::new(AppState {
         automacao_residencial: AutomacaoResidencial::new(),  // Inicializa a configuração dos dispositivos residenciais.
+        lock_devices: LockDevice::new(), // Inicializa a configuração para desbloquear os dispositivos residenciais.           
         correct_password: String::from("1234"),  // Define a senha correta para autenticação.
         clock_atual: Clock::new(),  // Inicializa o relógio.
         temperatura_atual: Temperatura::new(),  // Inicializa a temperatura.
         authenticated: false  // Estado inicial de autenticação é definido como falso.
     }));
-    
+
     // Cria um clone do estado para uso em uma thread separada.
     let state_clone = state.clone();
     // Inicia uma nova thread para atualizar o relógio e a temperatura em intervalos regulares.
@@ -366,6 +494,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Cors::permissive())  // Configura CORS de forma permissiva.
             .route("/api/data", web::get().to(get_data))  // Rota para obter dados dos dispositivos.
             .route("/api/update", web::put().to(update_data))  // Rota para atualizar os estados dos dispositivos.
+            .route("/api/lock_device", web::put().to(lock_device)) // Rota para bloquear o dispositivo
             .route("/api/login", web::post().to(login))  // Rota para login.
             .route("/api/logout", web::post().to(logout))  // Rota para logout.
     })
