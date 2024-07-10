@@ -3,22 +3,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px;
+  height: 100%;
   color: white;
   font-weight: bold;
   cursor: pointer;
-  border-radius: 5px;
-  margin-bottom: 10px; /* Add margin for lock button */
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  width: 100%;
 }
 
 .device-button.active {
   background-color: green;
 }
 
-.device-button.inactive {
-  background-color: red;
+.device-button.active:hover {
+  background-color: rgba(0, 128, 0, 0.8);
 }
 
+.device-button.inactive {
+  background-color: red;
+} 
+.device-button.inactive:hover {
+  background-color: rgba(255, 0, 0, 0.9);
+} 
 .device-button.locked {
   opacity: 0.5;
   cursor: not-allowed;

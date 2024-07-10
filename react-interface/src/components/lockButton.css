@@ -2,23 +2,27 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 30px;
-    width: 75px;
-    cursor: pointer;
-    margin: 10px; /* Adiciona margem entre o botão de dispositivo e o botão de bloqueio */
-    padding: 3px;
-    border-radius: 5px;
-  }
-  
-  .lock-button img {
     height: 100%;
-    width: 100%;
+    width: 18px;
+    padding-left: 1px;
+    cursor: pointer;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+    border-right-style: solid;
+    border-color: black;
+    border-width: 1px;
+    background-color:rgb(255, 255, 255);
+  }
+
+  .lock-button:hover{
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  #unlock-svg, #lock-svg {
+    position: absolute;
   }
   
-  .lock-button.locked {
-    background-color: red;
+  #lock-svg {
+    opacity: 0; /* Inicia escondido */
   }
   
-  .lock-button.unlocked {
-    background-color: green;
-  }

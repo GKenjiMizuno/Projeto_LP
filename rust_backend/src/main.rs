@@ -24,7 +24,7 @@ impl Clock {
 
     // Método para incrementar a hora no relógio.
     fn increment_hour(&mut self) {
-        if self.hour < 24 {
+        if self.hour < 23 {
             self.hour += 1  // Incrementa a hora enquanto for menor que 24.
         } else {
             self.hour = 0  // Reinicia a hora para 0 após alcançar 24.
@@ -108,7 +108,7 @@ impl AutomacaoResidencial {
         updates.cortinas.map(|cortinas| self.cortinas = cortinas);
         updates.robo.map(|robo| self.robo = robo);
         updates.cafeteira.map(|cafeteira| self.cafeteira = cafeteira);
-        updates.ar_condicionado.map(|ar| self.ar_condicionado = ar);
+        updates.ar_condicionado.map(|ar_condicionado| self.ar_condicionado = ar_condicionado);
         updates.aquecedor.map(|aquecedor| self.aquecedor = aquecedor);
     }
 
@@ -122,7 +122,7 @@ impl AutomacaoResidencial {
         data.insert("cortinas".to_string(), self.cortinas);
         data.insert("robo".to_string(), self.robo);
         data.insert("cafeteira".to_string(), self.cafeteira);
-        data.insert("ar condicionado".to_string(), self.ar_condicionado);
+        data.insert("ar_condicionado".to_string(), self.ar_condicionado);
         data.insert("aquecedor".to_string(), self.aquecedor);
         data
     }
@@ -262,7 +262,7 @@ impl LockDevice {
         data.insert("cortinas".to_string(), self.lock_cortinas);
         data.insert("robo".to_string(), self.lock_robo);
         data.insert("cafeteira".to_string(), self.lock_cafeteira);
-        data.insert("ar condicionado".to_string(), self.lock_ar_condicionado);
+        data.insert("ar_condicionado".to_string(), self.lock_ar_condicionado);
         data.insert("aquecedor".to_string(), self.lock_aquecedor);
         data
     }
