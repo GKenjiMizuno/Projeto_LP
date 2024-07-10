@@ -1,8 +1,8 @@
-// src/pages/Home.js
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './home.css';
 import DeviceButton from '../components/deviceButton';
+import LockButton from '../components/lockButton';
 
 const Home = () => {
   const location = useLocation();
@@ -17,8 +17,20 @@ const Home = () => {
     ar_condicionado: false,
     aquecedor: false,
   });
+  const [lockStatus, setLockStatus] = useState({
+    luz: false,
+    tranca: false,
+    alarme: false,
+    cortinas: false,
+    robo: false,
+    cafeteira: false,
+    ar_condicionado: false,
+    aquecedor: false,
+  });
   const [horaAtual, setHoraAtual] = useState(location.state?.hora_atual || 0);
   const [tempAtual, setTempAtual] = useState(location.state?.temp_atual || 12);
+
+  const deviceOrder = ['luz', 'tranca', 'alarme', 'cortinas', 'robo', 'cafeteira', 'ar_condicionado', 'aquecedor'];
 
   useEffect(() => {
     if (!location.state) {
@@ -67,6 +79,25 @@ const Home = () => {
     }
   };
 
+  const toggleLock = async (device) => {
+    const updatedLockStatus = !lockStatus[device];
+
+    try {
+      const response = await fetch('http://127.0.0.1:8080/api/lock_device', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ [`lock_${device}`]: updatedLockStatus }),
+      });
+
+      const data = await response.json();
+      setLockStatus(data);
+    } catch (error) {
+      console.error('Erro ao atualizar status de bloqueio:', error);
+    }
+  };
+
   return (
     <div className="body">
       <div className="container">
@@ -75,14 +106,21 @@ const Home = () => {
           <p>Temperatura Atual: {tempAtual.toFixed(2)}</p>
         </div>
         <div className="devices-grid">
-          <DeviceButton name="luz" isActive={devicesStatus.luz} toggleDevice={toggleDevice} />
-          <DeviceButton name="tranca" isActive={devicesStatus.tranca} toggleDevice={toggleDevice} />
-          <DeviceButton name="alarme" isActive={devicesStatus.alarme} toggleDevice={toggleDevice} />
-          <DeviceButton name="cortinas" isActive={devicesStatus.cortinas} toggleDevice={toggleDevice} />
-          <DeviceButton name="robo" isActive={devicesStatus.robo} toggleDevice={toggleDevice} />
-          <DeviceButton name="cafeteira" isActive={devicesStatus.cafeteira} toggleDevice={toggleDevice} />
-          <DeviceButton name="ar_condicionado" isActive={devicesStatus.ar_condicionado} toggleDevice={toggleDevice} />
-          <DeviceButton name="aquecedor" isActive={devicesStatus.aquecedor} toggleDevice={toggleDevice} />
+          {deviceOrder.map((device) => (
+            <div key={device} className="device-container">
+              <DeviceButton
+                name={device}
+                isActive={devicesStatus[device]}
+                isLocked={lockStatus[device]}
+                toggleDevice={toggleDevice}
+              />
+              <LockButton
+                name={device}
+                isLocked={lockStatus[device]}
+                toggleLock={toggleLock}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </div>

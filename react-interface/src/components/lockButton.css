@@ -1,0 +1,24 @@
+.lock-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    width: 75px;
+    cursor: pointer;
+    margin: 10px; /* Adiciona margem entre o botão de dispositivo e o botão de bloqueio */
+    padding: 3px;
+    border-radius: 5px;
+  }
+  
+  .lock-button img {
+    height: 100%;
+    width: 100%;
+  }
+  
+  .lock-button.locked {
+    background-color: red;
+  }
+  
+  .lock-button.unlocked {
+    background-color: green;
+  }

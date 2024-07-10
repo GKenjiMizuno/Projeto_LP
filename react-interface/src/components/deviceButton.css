@@ -1,20 +1,25 @@
+/* src/components/deviceButton.css */
 .device-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 60px;
-    margin: 10px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  .active {
-    background-color: green;
-  }
-  
-  .inactive {
-    background-color: red;
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 10px; /* Add margin for lock button */
+}
+
+.device-button.active {
+  background-color: green;
+}
+
+.device-button.inactive {
+  background-color: red;
+}
+
+.device-button.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
