@@ -3,12 +3,6 @@ html, body {
     margin: 0;
 }
 
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: grey;
-}
 
 .container {
     background-color: rgb(75, 75, 75);
@@ -18,28 +12,47 @@ body {
 
 }
 
-.container-header{
+.container-header-login{
     justify-content: center;
     align-items: center;
     display: flex;
     flex-direction: column;
+    background-color: rgb(100, 100, 100);
+    border-radius: 10px;
+    margin-bottom: 60px;
 }
 
-.container-header input {
+.container-body{
+  justify-content: center;
+  justify-items: center;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+}
+
+.container-body input {
     margin-bottom: 10px;
     padding: 10px;
-    width: 100%;
+    width: 50%;
     box-sizing: border-box;
   }
   
-  .container-header button {
+  .container-body button {
     padding: 10px;
-    width: 100%;
+    width: 25%;
     box-sizing: border-box;
+    margin-bottom: 10px;
+    cursor: pointer;
   }
   
   .error {
     color: red;
     margin-top: 10px;
+  }
+
+  .house-image-login{
+    justify-content: center;
+    align-items:end;
+    display:flex;
   }
 

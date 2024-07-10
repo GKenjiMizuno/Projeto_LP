@@ -79,6 +79,7 @@ const Home = () => {
     }
   };
 
+
   const toggleLock = async (device) => {
     const updatedLockStatus = !lockStatus[device];
 
@@ -95,6 +96,27 @@ const Home = () => {
       setLockStatus(data);
     } catch (error) {
       console.error('Erro ao atualizar status de bloqueio:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8080/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ authenticated: true }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        navigate('/');
+      } else {
+        console.error('Erro ao realizar logout:', data.message);
+      }
+    } catch (error) {
+      console.error('Erro ao realizar logout:', error);
     }
   };
 
@@ -121,7 +143,7 @@ const Home = () => {
           <svg id="house-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
           </svg>
-          <button className='logout-div' >
+          <button className='logout-div' onClick = {handleLogout}>
             <p>SAIR DE CASA</p>
           </button>
         </div>

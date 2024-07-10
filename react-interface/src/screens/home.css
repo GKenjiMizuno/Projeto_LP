@@ -17,17 +17,6 @@ body {
   box-shadow: 10px 10px 20px #000000;
 }
 
-.container-header {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-direction: row;
-  justify-content: space-between;
-  background-color: rgb(100, 100, 100);
-  border-radius: 10px;
-  color: white;
-  font-weight: bold;
-}
 
 .home-container-header {
   display: flex;
