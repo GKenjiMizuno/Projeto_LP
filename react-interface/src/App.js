@@ -1,19 +1,21 @@
-import './App.css';
-import Login from './screens/login';
+// src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './screens/home';
-import { BrowserRouter as Router, Route, Switch, Routes } from 'react-router-dom';
+import Login from './screens/login';
+import Register from './screens/register';
 
-function App() {
+const App = () => {
   return (
     <Router>
-      <div>
-        <Routes>
-          <Route exact path='/' element={<Login />} />
-          <Route path = '/home' element={<Home />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Login />} />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;

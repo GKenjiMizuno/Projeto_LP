@@ -1,11 +1,10 @@
-// Importação de bibliotecas necessárias para o projeto.
-use actix_cors::Cors;  // Biblioteca para manipulação de Cross-Origin Resource Sharing (CORS) no Actix.
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};  // Importa componentes principais do Actix-Web para construir o servidor HTTP.
-use serde::{Serialize, Deserialize};  // Bibliotecas para serialização e deserialização de dados (útil para JSON).
-use std::{collections::HashMap, env, sync::Mutex, thread, time::Duration};  // Bibliotecas padrão do Rust para manipulação de variáveis de ambiente, sincronização, threads e tempo.
-use rand::{self, Rng};  // Biblioteca para geração de números aleatórios.
-use serde_json::json;  // Importação da macro json para facilitar a criação de objetos JSON.
-extern crate env_logger;  // Biblioteca para configuração de logs baseada em variáveis de ambiente.
+use actix_cors::Cors;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use serde::{Serialize, Deserialize};
+use std::{collections::HashMap, env, sync::Mutex, thread, time::Duration};
+use rand::{self, Rng};
+use serde_json::json;
+extern crate env_logger;
 
 // Definição de uma estrutura de dados para representar um relógio simples.
 #[derive(Serialize, Clone)]
@@ -225,7 +224,7 @@ impl AutomacaoResidencial {
     }
 }
 
-// Definição de uma estrutura de dados para representar se o dispositivo está bloquado ou desbloqueado. Se estiver bloqueado,
+// Definição de uma estrutura de dados para representar se o dispositivo está bloqueado ou desbloqueado. Se estiver bloqueado,
 // o dispositivo não pode ser atualizado.
 #[derive(Serialize, Clone)]
 struct LockDevice {
@@ -275,7 +274,6 @@ impl LockDevice {
     }
 
     fn device_is_locked(&self, device_to_update: UpdateData) -> Result<bool, String> {
-
         if !device_to_update.luz.is_none(){
             Ok(self.lock_luz)
         } else if !device_to_update.tranca.is_none(){
@@ -304,16 +302,16 @@ impl LockDevice {
     fn return_data(&self) -> HashMap<String, bool> {
         let mut data = HashMap::new();
         // Insere o estado de cada dispositivo no mapa.
-        data.insert("luz".to_string(), self.lock_luz);
-        data.insert("tranca".to_string(), self.lock_tranca);
-        data.insert("alarme".to_string(), self.lock_alarme);
-        data.insert("cortinas".to_string(), self.lock_cortinas);
-        data.insert("robo".to_string(), self.lock_robo);
-        data.insert("cafeteira".to_string(), self.lock_cafeteira);
-        data.insert("ar_condicionado".to_string(), self.lock_ar_condicionado);
-        data.insert("aquecedor".to_string(), self.lock_aquecedor);
-        data.insert("caixa_de_som".to_string(), self.lock_caixa_de_som);
-        data.insert("televisao".to_string(), self.lock_televisao);
+        data.insert("lock_luz".to_string(), self.lock_luz);
+        data.insert("lock_tranca".to_string(), self.lock_tranca);
+        data.insert("lock_alarme".to_string(), self.lock_alarme);
+        data.insert("lock_cortinas".to_string(), self.lock_cortinas);
+        data.insert("lock_robo".to_string(), self.lock_robo);
+        data.insert("lock_cafeteira".to_string(), self.lock_cafeteira);
+        data.insert("lock_ar_condicionado".to_string(), self.lock_ar_condicionado);
+        data.insert("lock_aquecedor".to_string(), self.lock_aquecedor);
+        data.insert("lock_caixa_de_som".to_string(), self.lock_caixa_de_som);
+        data.insert("lock_televisao".to_string(), self.lock_televisao);
         data
     }
 
@@ -375,7 +373,6 @@ async fn update_data(state: web::Data<Mutex<AppState>>, new_data: web::Json<Upda
     }
     web::Json(state.automacao_residencial.return_data())
 }
-
 
 // Define uma estrutura para deserializar dados recebidos em requisições de atualização.
 #[derive(Deserialize)]
@@ -448,8 +445,8 @@ struct LoginResponse {
 async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>) -> impl Responder {
     // Bloqueia o estado para modificação segura.
     let mut state = state.lock().unwrap();
-    // Verifica se a senha fornecida na solicitação é igual à senha correta armazenada.
-    if data.password == state.correct_password {
+    // Verifica se a senha fornecida é uma das senhas cadastradas.
+    if state.passwords.contains(&data.password) {
         // Chama a função para ajustar os dispositivos para um estado de "acesso garantido".
         state.automacao_residencial.acesso_garantido();
         // Marca o usuário como autenticado.
@@ -507,6 +504,8 @@ struct AppState {
     temperatura_atual: Temperatura,
     // Campo booleano que indica se um usuário está autenticado ou não.
     authenticated: bool,
+    // Lista de senhas permitidas para o acesso
+    passwords: Vec<String>,
 }
 
 // Anotação para indicar que a função `main` deve ser executada em um ambiente assíncrono usando `actix_web`.
@@ -521,10 +520,11 @@ async fn main() -> std::io::Result<()> {
     let state = web::Data::new(Mutex::new(AppState {
         automacao_residencial: AutomacaoResidencial::new(),  // Inicializa a configuração dos dispositivos residenciais.
         lock_devices: LockDevice::new(), // Inicializa a configuração para desbloquear os dispositivos residenciais.           
-        correct_password: String::from("1234"),  // Define a senha correta para autenticação.
+        correct_password: String::from("master123"),  // Define a senha mestra para registro.
         clock_atual: Clock::new(),  // Inicializa o relógio.
         temperatura_atual: Temperatura::new(),  // Inicializa a temperatura.
-        authenticated: false  // Estado inicial de autenticação é definido como falso.
+        authenticated: false,  // Estado inicial de autenticação é definido como falso.
+        passwords: Vec::new(),  // Inicializa a lista de senhas permitidas.
     }));
 
     // Cria um clone do estado para uso em uma thread separada.
@@ -560,9 +560,27 @@ async fn main() -> std::io::Result<()> {
             .route("/api/lock_device", web::put().to(lock_device)) // Rota para bloquear o dispositivo
             .route("/api/login", web::post().to(login))  // Rota para login.
             .route("/api/logout", web::post().to(logout))  // Rota para logout.
-            .route("/api/set_mode", web::post().to(set_mode))
+            .route("/api/register", web::post().to(register))  // Rota para registrar novas senhas.
+            .route("/api/set_mode", web::post().to(set_mode)) // Rota para mudar o modo dos dispositivos.
     })
     .bind("127.0.0.1:8080")?  // Define o endereço e porta onde o servidor deve escutar.
     .run()  // Inicia o servidor para escutar por requisições.
     .await  // Aguarda o servidor terminar de rodar.
+}
+
+// Função assíncrona para processar uma solicitação de registro.
+#[derive(Deserialize)]
+struct NewPassword {
+    password: String,
+    master_password: String,
+}
+
+async fn register(data: web::Json<NewPassword>, state: web::Data<Mutex<AppState>>) -> impl Responder {
+    let mut state = state.lock().unwrap();
+    if data.master_password == state.correct_password {
+        state.passwords.push(data.password.clone());
+        HttpResponse::Ok().json(json!({"message": "Password added successfully"}))
+    } else {
+        HttpResponse::Unauthorized().json(json!({"message": "Invalid master password"}))
+    }
 }
