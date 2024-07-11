@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './home.css';
 import DeviceButton from '../components/deviceButton';
 import LockButton from '../components/lockButton';
+import DropdownMenu from '../components/dropDownMenu'
 
 const Home = () => {
   const location = useLocation();
@@ -16,6 +17,8 @@ const Home = () => {
     cafeteira: false,
     ar_condicionado: false,
     aquecedor: false,
+    caixa_de_som: false,
+    televisao: false,
   });
   const [lockStatus, setLockStatus] = useState({
     luz: false,
@@ -26,11 +29,13 @@ const Home = () => {
     cafeteira: false,
     ar_condicionado: false,
     aquecedor: false,
+    caixa_de_som: false,
+    televisao: false,
   });
   const [horaAtual, setHoraAtual] = useState(location.state?.hora_atual || 0);
   const [tempAtual, setTempAtual] = useState(location.state?.temp_atual || 12);
 
-  const deviceOrder = ['luz', 'tranca', 'alarme', 'cortinas', 'robo', 'cafeteira', 'ar_condicionado', 'aquecedor'];
+  const deviceOrder = ['luz', 'tranca', 'alarme', 'cortinas', 'robo', 'cafeteira', 'ar_condicionado', 'aquecedor', 'caixa_de_som', 'televisao'];
 
   useEffect(() => {
     if (!location.state) {
@@ -99,6 +104,24 @@ const Home = () => {
     }
   };
 
+  const handleModeChange = async (mode) => {
+    try {
+      const response = await fetch('http://127.0.0.1:8080/api/set_mode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modo: mode }),
+      });
+
+
+      const data = await response.json();
+      setDevicesStatus(data);
+    } catch (error) {
+      console.error('Erro ao atualizar dados:', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8080/api/logout', {
@@ -140,12 +163,15 @@ const Home = () => {
               <p>{tempAtual.toFixed(0)} °C</p>
             </div>
           </div>
-          <svg id="house-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+          <svg id="house-svg-home" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
           </svg>
+          <div className='buttons-header'>
+          <DropdownMenu handleModeChange={handleModeChange} />
           <button className='logout-div' onClick = {handleLogout}>
             <p>SAIR DE CASA</p>
           </button>
+          </div>
         </div>
         <div className="devices-grid">
           {deviceOrder.map((device) => (

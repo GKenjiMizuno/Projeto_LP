@@ -81,6 +81,8 @@ struct AutomacaoResidencial {
     cafeteira: bool,  // Estado da cafeteira (ligada ou desligada).
     ar_condicionado: bool,  // Estado do ar-condicionado (ligado ou desligado).
     aquecedor: bool,  // Estado do aquecedor (ligado ou desligado).
+    caixa_de_som: bool,
+    televisao: bool,
 }
 
 // Implementação de métodos para a estrutura AutomacaoResidencial.
@@ -96,6 +98,8 @@ impl AutomacaoResidencial {
             cafeteira: false,  // Cafeteira inicialmente desligada.
             ar_condicionado: false,  // Ar condicionado inicialmente desligado.
             aquecedor: false,  // Aquecedor inicialmente desligado.
+            caixa_de_som: false,
+            televisao: false,
         }
     }
 
@@ -110,6 +114,8 @@ impl AutomacaoResidencial {
         updates.cafeteira.map(|cafeteira| self.cafeteira = cafeteira);
         updates.ar_condicionado.map(|ar_condicionado| self.ar_condicionado = ar_condicionado);
         updates.aquecedor.map(|aquecedor| self.aquecedor = aquecedor);
+        updates.caixa_de_som.map(|caixa_de_som| self.caixa_de_som = caixa_de_som);
+        updates.televisao.map(|televisao| self.televisao = televisao);
     }
 
     // Método para retornar o estado atual dos dispositivos em formato de mapa.
@@ -124,6 +130,8 @@ impl AutomacaoResidencial {
         data.insert("cafeteira".to_string(), self.cafeteira);
         data.insert("ar_condicionado".to_string(), self.ar_condicionado);
         data.insert("aquecedor".to_string(), self.aquecedor);
+        data.insert("caixa_de_som".to_string(), self.caixa_de_som);
+        data.insert("televisao".to_string(), self.televisao);
         data
     }
 
@@ -144,6 +152,8 @@ impl AutomacaoResidencial {
         self.cafeteira = false;
         self.ar_condicionado = false;
         self.aquecedor = false;
+        self.caixa_de_som = false;
+        self.televisao = false;
     }
 
     // Método para ajustar os dispositivos com base na temperatura atual.
@@ -169,21 +179,49 @@ impl AutomacaoResidencial {
         if hora_atual >= 22 ||   hora_atual < 6 {
             self.luz = false;
             self.cortinas = true;
+            self.caixa_de_som = false;
+            self.televisao = false;
+            self.robo = false;
         } else if hora_atual == 6 {
             self.luz = true;
             self.cortinas = false;
             self.cafeteira = true;
-        } else {
+        } else if hora_atual == 7 {
             self.cafeteira = false;
+        } else {
+            // pass
         }
     }
 
-    // Método para converter o estado atual dos dispositivos em uma mensagem formatada como string.
-    fn to_message(&self) -> String {
-        format!(
-            "Luz: {}, Tranca: {}, Alarme: {}, Cortinas: {}, Robo: {}, Cafeteira: {}, Ar Condicionado: {}, Aquecedor: {}",
-            self.luz, self.tranca, self.alarme, self.cortinas, self.robo, self.cafeteira, self.ar_condicionado, self.aquecedor
-        )
+    fn change_mode(&mut self, mode_to_change: ChangeMode) {
+        if mode_to_change.modo == "dormir".to_string() {
+            self.luz = false;
+            self.cortinas = true;
+            self.caixa_de_som = false;
+            self.televisao = false;
+            self.robo = false;
+        } else if mode_to_change.modo == "acordar".to_string() {
+            self.luz = true;
+            self.cortinas = false;
+            self.cafeteira = true;
+        } else if mode_to_change.modo == "limpar".to_string() {
+            self.robo = true
+        } else if mode_to_change.modo == "trancar".to_string() {
+            self.tranca = true;
+            self.alarme = true;    
+        } else if mode_to_change.modo == "destrancar".to_string() {
+            self.tranca = false;
+            self.alarme = false;
+        } else if mode_to_change.modo == "filme".to_string() {
+            self.televisao = true;
+            self.cortinas = true;
+            self.luz = true;
+        } else if mode_to_change.modo == "musica".to_string() {
+            self.caixa_de_som = true;
+            self.luz = true;
+        }else {
+            // pass
+        }
     }
 }
 
@@ -199,6 +237,8 @@ struct LockDevice {
     lock_cafeteira: bool,  
     lock_ar_condicionado: bool,
     lock_aquecedor: bool,  
+    lock_caixa_de_som: bool,
+    lock_televisao: bool,
 }
 
 // Implementação de métodos para a estrutura
@@ -214,6 +254,8 @@ impl LockDevice {
             lock_cafeteira: false,  
             lock_ar_condicionado: false,
             lock_aquecedor: false,  
+            lock_caixa_de_som: false,
+            lock_televisao: false,
         }
     }
 
@@ -228,6 +270,8 @@ impl LockDevice {
         updates.lock_cafeteira.map(|lock_cafeteira| self.lock_cafeteira = lock_cafeteira);
         updates.lock_ar_condicionado.map(|lock_ar_condicionado| self.lock_ar_condicionado = lock_ar_condicionado);
         updates.lock_aquecedor.map(|lock_aquecedor| self.lock_aquecedor = lock_aquecedor);
+        updates.lock_caixa_de_som.map(|lock_caixa_de_som| self.lock_caixa_de_som = lock_caixa_de_som);
+        updates.lock_televisao.map(|lock_televisao| self.lock_televisao = lock_televisao);
     }
 
     fn device_is_locked(&self, device_to_update: UpdateData) -> Result<bool, String> {
@@ -248,6 +292,10 @@ impl LockDevice {
             Ok(self.lock_ar_condicionado)
         } else if !device_to_update.aquecedor.is_none(){
             Ok(self.lock_aquecedor)
+        } else if !device_to_update.caixa_de_som.is_none(){
+            Ok(self.lock_caixa_de_som)
+        } else if !device_to_update.televisao.is_none(){
+            Ok(self.lock_televisao)
         } else {
             Err("Item não fornecido".to_string())
         }
@@ -264,6 +312,8 @@ impl LockDevice {
         data.insert("cafeteira".to_string(), self.lock_cafeteira);
         data.insert("ar_condicionado".to_string(), self.lock_ar_condicionado);
         data.insert("aquecedor".to_string(), self.lock_aquecedor);
+        data.insert("caixa_de_som".to_string(), self.lock_caixa_de_som);
+        data.insert("televisao".to_string(), self.lock_televisao);
         data
     }
 
@@ -284,11 +334,10 @@ async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
     // Bloqueia o estado compartilhado da aplicação para leitura.
     let state = data.lock().unwrap();
     // Gera uma mensagem descrevendo o estado atual dos dispositivos.
-    let message = state.automacao_residencial.to_message();
     // Retorna os dados como JSON, incluindo a mensagem, o estado atual dos dispositivos,
     // a hora atual, a temperatura atual, e se o usuário está autenticado.
     web::Json(ResponseData { 
-        message,
+        message: "successo".to_string(),
         devices_status: state.automacao_residencial.return_data(),
         hora_atual: state.clock_atual.hour,
         temp_atual: state.temperatura_atual.temp,
@@ -307,6 +356,8 @@ struct UpdateData {
     cafeteira: Option<bool>,  // Opcional: estado da cafeteira.
     ar_condicionado: Option<bool>,  // Opcional: estado do ar-condicionado.
     aquecedor: Option<bool>,  // Opcional: estado do aquecedor.
+    caixa_de_som: Option<bool>,
+    televisao: Option<bool>
 }
 
 // Função assíncrona para atualizar os dados dos dispositivos na automação residencial.
@@ -337,6 +388,8 @@ struct UpdateLockData {
     lock_cafeteira: Option<bool>,  // Opcional: estado do bloqueio da cafeteira.
     lock_ar_condicionado: Option<bool>,  // Opcional: estado do bloqueio do ar-condicionado.
     lock_aquecedor: Option<bool>,  // Opcional: estado do bloqueio do aquecedor.
+    lock_caixa_de_som: Option<bool>,
+    lock_televisao: Option<bool>,
 }
 
 async fn device_is_locked(state: web::Data<Mutex<AppState>>, new_data: UpdateData) -> bool {
@@ -357,6 +410,16 @@ async fn lock_device(state: web::Data<Mutex<AppState>>, new_data: web::Json<Upda
     state.lock_devices.update(new_data.into_inner());
     // Retorna o estado atualizado dos dispositivos bloqueados como JSON
     web::Json(state.lock_devices.return_data())
+}
+#[derive(Deserialize)]
+struct ChangeMode {
+    modo: String,
+}
+
+async fn set_mode(state: web::Data<Mutex<AppState>>, mode: web::Json<ChangeMode>) -> impl Responder{
+    let mut state = state.lock().unwrap();
+    state.automacao_residencial.change_mode(mode.into_inner());
+    web::Json(state.automacao_residencial.return_data())
 }
 
 // Define uma estrutura para deserializar dados de solicitação de login.
@@ -497,6 +560,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/lock_device", web::put().to(lock_device)) // Rota para bloquear o dispositivo
             .route("/api/login", web::post().to(login))  // Rota para login.
             .route("/api/logout", web::post().to(logout))  // Rota para logout.
+            .route("/api/set_mode", web::post().to(set_mode))
     })
     .bind("127.0.0.1:8080")?  // Define o endereço e porta onde o servidor deve escutar.
     .run()  // Inicia o servidor para escutar por requisições.

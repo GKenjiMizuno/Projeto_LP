@@ -28,10 +28,25 @@ body {
   border-top-right-radius: 10px;
   color: white;
   font-weight: bold;
+  height: 90px;
+}
+
+.buttons-header{
+  display: flex;
+  flex-direction: row;  
 }
 svg {
   color: black;
 }
+#house-svg-home{
+  position: absolute;
+  left: 47.4%;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  height: 75px;  
+  width: 75px;
+}
+
 #house-svg{
   margin-bottom: 10px;
   margin-top: 10px;
@@ -81,13 +96,14 @@ svg {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 20px;
+  margin-right: 10px;
+  margin-left: 10px;
   line-break: auto;
   text-align: center;
-  width: 100px;
+  width: 80px;
   height: 60px;
   border-radius: 12px;
-  font-size:medium;
+  font-size: 14px;
   border: 0;
   cursor: pointer;
   color: white;
