@@ -34,6 +34,7 @@ const Home = () => {
   });
   const [horaAtual, setHoraAtual] = useState(location.state?.hora_atual || 0);
   const [tempAtual, setTempAtual] = useState(location.state?.temp_atual || 12);
+  const [precAtual,setPrecAtual] = useState(location.state?.prec_atual || 0);
 
   const deviceOrder = ['luz', 'tranca', 'alarme', 'cortinas', 'robo', 'cafeteira', 'ar_condicionado', 'aquecedor', 'caixa_de_som', 'televisao'];
 
@@ -50,6 +51,7 @@ const Home = () => {
         setDevicesStatus(data.devices_status);
         setHoraAtual(data.hora_atual);
         setTempAtual(data.temp_atual);
+        setPrecAtual(data.prec_atual);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
       }
@@ -122,6 +124,9 @@ const Home = () => {
     }
   };
 
+  
+  
+
   const handleLogout = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8080/api/logout', {
@@ -161,6 +166,12 @@ const Home = () => {
                 <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1"/>
               </svg>
               <p>{tempAtual.toFixed(0)} °C</p>
+            </div>
+            <div className='prec-div'>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-drizzle" viewBox="0 0 16 16">
+              <path d="M4.158 12.025a.5.5 0 0 1 .316.633l-.5 1.5a.5.5 0 0 1-.948-.316l.5-1.5a.5.5 0 0 1 .632-.317m6 0a.5.5 0 0 1 .316.633l-.5 1.5a.5.5 0 0 1-.948-.316l.5-1.5a.5.5 0 0 1 .632-.317m-3.5 1.5a.5.5 0 0 1 .316.633l-.5 1.5a.5.5 0 0 1-.948-.316l.5-1.5a.5.5 0 0 1 .632-.317m6 0a.5.5 0 0 1 .316.633l-.5 1.5a.5.5 0 1 1-.948-.316l.5-1.5a.5.5 0 0 1 .632-.317m.747-8.498a5.001 5.001 0 0 0-9.499-1.004A3.5 3.5 0 1 0 3.5 11H13a3 3 0 0 0 .405-5.973M8.5 2a4 4 0 0 1 3.976 3.555.5.5 0 0 0 .5.445H13a2 2 0 0 1 0 4H3.5a2.5 2.5 0 1 1 .605-4.926.5.5 0 0 0 .596-.329A4 4 0 0 1 8.5 2"/>
+            </svg>
+               <p>{precAtual} mm</p>
             </div>
             <div>
               

@@ -2,6 +2,7 @@
 import React from 'react';
 import './deviceButton.css';
 
+
 const DeviceButton = ({ name, isActive, isLocked, toggleDevice }) => {
   const handleClick = () => {
     if (!isLocked) {
