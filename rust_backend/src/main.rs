@@ -1,10 +1,15 @@
-use actix_cors::Cors;
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use serde::{Serialize, Deserialize};
-use std::{collections::HashMap, env, sync::Mutex, thread, time::Duration};
-use rand::{self, Rng};
-use serde_json::json;
-extern crate env_logger;
+// Importação de bibliotecas necessárias para o projeto.
+use actix_cors::Cors;  // Biblioteca para manipulação de Cross-Origin Resource Sharing (CORS) no Actix.
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};  // Importa componentes principais do Actix-Web para construir o servidor HTTP.
+use serde::{Serialize, Deserialize};  // Bibliotecas para serialização e deserialização de dados (útil para JSON).
+use std::{collections::HashMap, env, sync::Mutex, thread, time::Duration};  // Bibliotecas padrão do Rust para manipulação de variáveis de ambiente, sincronização, threads e tempo.
+use rand::{self, distributions::Standard, Rng};  // Biblioteca para geração de números aleatórios.
+use serde_json::json;  // Importação da macro json para facilitar a criação de objetos JSON.
+extern crate env_logger;  // Biblioteca para configuração de logs baseada em variáveis de ambiente.
+use std::error::Error;
+use std::fs::File;
+use std::path::Path;
+use csv::{ReaderBuilder, Trim}; // Importa o enum Trim
 
 // Definição de uma estrutura de dados para representar um relógio simples.
 #[derive(Serialize, Clone)]
@@ -17,7 +22,7 @@ impl Clock {
     // Método construtor para criar uma nova instância de Clock com a hora inicializada em 12.
     fn new() -> Self {
         Self {
-            hour: 12,
+            hour: 0,
         }
     }
 
@@ -35,37 +40,66 @@ impl Clock {
 // e a clonagem de suas instâncias.
 #[derive(Serialize, Clone)]
 struct Temperatura {
-    temp: f64,  // Armazena o valor da temperatura como um número de ponto flutuante.
+    temp: f64,     // Armazena o valor da temperatura como um número de ponto flutuante
+    prec: f64,    // Armazena o valor da precipitação como um número de ponto flutuante
+    contador: i128, // Conta a linha do arquivo .CSV
 }
 
-// Implementação da estrutura Temperatura.
 impl Temperatura {
-    // Método construtor que inicializa uma nova Temperatura com um valor aleatório entre 10.0 e 30.0 graus.
+    // Método construtor que inicializa uma nova Temperatura com um valor inicial de temperatura.
     fn new() -> Self {
-        // Gera um valor inicial de temperatura aleatório entre 10.0 e 30.0 graus.
-        let temp_inicial: f64 = rand::thread_rng().gen_range(10.0..30.0);
         Self {
-            temp: temp_inicial
+            temp: 20.1,     // Valor inicial da primeira linha
+            contador: 1,
+            prec: 0.0,        // Valor inicial da primeira linha
         }
     }
 
-    // Método para alterar a temperatura com base na hora atual.
-    fn alterar_temp(&mut self, hora_atual: i32) -> f64 {
-        // Define a variação máxima de temperatura como 2.0 graus.
-        let variacao_max: f64 = 2.0;
+    // Método que lê e retorna os dados de temperatura baseado no contador
+    fn alterar_temp(&mut self, file_path: &str) -> Result<Option<()>, Box<dyn Error>> {
+        // Caminho para o arquivo CSV
+        let path = Path::new(file_path);
+        
+        // Abre o arquivo em modo de leitura
+        let file = File::open(&path)?;
+        // Cria um leitor CSV
+        let mut rdr = csv::ReaderBuilder::new()
+            .delimiter(b';') // Define o delimitador como ;
+            .trim(Trim::All) // Remove espaços em branco excessivos
+            .from_reader(file);
 
-        // Calcula a alteração da temperatura. Durante o dia (6h às 18h), a temperatura pode aumentar
-        // até 2.0 graus; durante a noite, pode diminuir até 2.0 graus.
-        let alteracao: f64 = if (6..18).contains(&hora_atual) {
-            rand::thread_rng().gen_range(0.0..variacao_max)  // Aumenta a temperatura durante o dia.
-        } else {
-            rand::thread_rng().gen_range(-variacao_max..0.0)  // Diminui a temperatura durante a noite.
-        };
+        // Contador para controlar a linha desejada
+        let mut current_line = 0;
 
-        // Atualiza a temperatura com a alteração calculada.
-        self.temp += alteracao;
-        // Retorna o novo valor da temperatura.
-        self.temp
+        // Itera sobre cada registro no arquivo CSV
+        for result in rdr.records() {
+            // Verifica se houve um erro ao ler o registro
+            let record = result?;
+
+            // Incrementa o contador de linha
+            current_line += 1;
+            
+
+            // Verifica se o contador de linha alcançou o valor desejado
+            if current_line == self.contador {
+                // Processa cada campo do registro
+                let value1_str = record.get(2).ok_or("Campo não encontrado")?.trim().replace(",", ".");
+                let value2_str = record.get(3).ok_or("Campo não encontrado")?.trim().replace(",", ".");
+                
+                let precipitacao: f64 = value1_str.parse()?;
+                let temperatura: f64 = value2_str.parse()?;
+
+                self.temp = temperatura;
+                self.prec = precipitacao;
+                self.contador += 1;
+
+                // Aqui você pode retornar algo se necessário
+                return Ok(Some(()));
+            }
+        }
+
+        // Se não encontrar o registro com o contador especificado
+        Ok(None)
     }
 }
 
@@ -75,7 +109,7 @@ struct AutomacaoResidencial {
     luz: bool,  // Estado da luz (ligada ou desligada).
     tranca: bool,  // Estado da tranca (trancada ou destrancada).
     alarme: bool,  // Estado do alarme (ativado ou desativado).
-    cortinas: bool,  // Estado das cortinas (abertas ou fechadas).
+    janelas: bool,  // Estado das janelas (abertas ou fechadas).
     robo: bool,  // Estado do robô (ativo ou inativo).
     cafeteira: bool,  // Estado da cafeteira (ligada ou desligada).
     ar_condicionado: bool,  // Estado do ar-condicionado (ligado ou desligado).
@@ -92,7 +126,7 @@ impl AutomacaoResidencial {
             luz: false,  // Luz inicialmente desligada.
             tranca: true,  // Tranca inicialmente fechada.
             alarme: true,  // Alarme inicialmente ligado.
-            cortinas: true,  // Cortinas inicialmente abertas.
+            janelas: false,  // janelas inicialmente abertas.
             robo: false,  // Robô inicialmente desligado.
             cafeteira: false,  // Cafeteira inicialmente desligada.
             ar_condicionado: false,  // Ar condicionado inicialmente desligado.
@@ -108,7 +142,7 @@ impl AutomacaoResidencial {
         updates.luz.map(|luz| self.luz = luz);
         updates.tranca.map(|tranca| self.tranca = tranca);
         updates.alarme.map(|alarme| self.alarme = alarme);
-        updates.cortinas.map(|cortinas| self.cortinas = cortinas);
+        updates.janelas.map(|janelas| self.janelas = janelas);
         updates.robo.map(|robo| self.robo = robo);
         updates.cafeteira.map(|cafeteira| self.cafeteira = cafeteira);
         updates.ar_condicionado.map(|ar_condicionado| self.ar_condicionado = ar_condicionado);
@@ -124,7 +158,7 @@ impl AutomacaoResidencial {
         data.insert("luz".to_string(), self.luz);
         data.insert("tranca".to_string(), self.tranca);
         data.insert("alarme".to_string(), self.alarme);
-        data.insert("cortinas".to_string(), self.cortinas);
+        data.insert("janelas".to_string(), self.janelas);
         data.insert("robo".to_string(), self.robo);
         data.insert("cafeteira".to_string(), self.cafeteira);
         data.insert("ar_condicionado".to_string(), self.ar_condicionado);
@@ -146,7 +180,7 @@ impl AutomacaoResidencial {
         self.luz = false;
         self.tranca = true;
         self.alarme = true;
-        self.cortinas = true;
+        self.janelas = true;
         self.robo = false;
         self.cafeteira = false;
         self.ar_condicionado = false;
@@ -173,17 +207,25 @@ impl AutomacaoResidencial {
         }
     }
 
+    fn precipitacao(&mut self, precipitacao: f64) {
+        let prec_limite: f64 = 2.0;
+
+        if precipitacao >= prec_limite {
+            self.janelas = true;
+        }
+    }
+
     // Método para configurar os dispositivos com base na hora do dia, especificamente para dormir ou acordar.
     fn dormindo_ou_acordado(&mut self, hora_atual: i32) {
         if hora_atual >= 22 ||   hora_atual < 6 {
             self.luz = false;
-            self.cortinas = true;
+            self.janelas = true;
             self.caixa_de_som = false;
             self.televisao = false;
             self.robo = false;
         } else if hora_atual == 6 {
             self.luz = true;
-            self.cortinas = false;
+            self.janelas = false;
             self.cafeteira = true;
         } else if hora_atual == 7 {
             self.cafeteira = false;
@@ -195,13 +237,13 @@ impl AutomacaoResidencial {
     fn change_mode(&mut self, mode_to_change: ChangeMode) {
         if mode_to_change.modo == "dormir".to_string() {
             self.luz = false;
-            self.cortinas = true;
+            self.janelas = true;
             self.caixa_de_som = false;
             self.televisao = false;
             self.robo = false;
         } else if mode_to_change.modo == "acordar".to_string() {
             self.luz = true;
-            self.cortinas = false;
+            self.janelas = false;
             self.cafeteira = true;
         } else if mode_to_change.modo == "limpar".to_string() {
             self.robo = true
@@ -213,7 +255,7 @@ impl AutomacaoResidencial {
             self.alarme = false;
         } else if mode_to_change.modo == "filme".to_string() {
             self.televisao = true;
-            self.cortinas = true;
+            self.janelas = true;
             self.luz = true;
         } else if mode_to_change.modo == "musica".to_string() {
             self.caixa_de_som = true;
@@ -224,14 +266,14 @@ impl AutomacaoResidencial {
     }
 }
 
-// Definição de uma estrutura de dados para representar se o dispositivo está bloqueado ou desbloqueado. Se estiver bloqueado,
+// Definição de uma estrutura de dados para representar se o dispositivo está bloquado ou desbloqueado. Se estiver bloqueado,
 // o dispositivo não pode ser atualizado.
 #[derive(Serialize, Clone)]
 struct LockDevice {
     lock_luz: bool, // true: bloqueado. false: desbloqueado 
     lock_tranca: bool,  
     lock_alarme: bool,  
-    lock_cortinas: bool,  
+    lock_janelas: bool,  
     lock_robo: bool,  
     lock_cafeteira: bool,  
     lock_ar_condicionado: bool,
@@ -248,7 +290,7 @@ impl LockDevice {
             lock_luz: false,  
             lock_tranca: false,  
             lock_alarme: false,  
-            lock_cortinas: false,  
+            lock_janelas: false,  
             lock_robo: false,  
             lock_cafeteira: false,  
             lock_ar_condicionado: false,
@@ -264,7 +306,7 @@ impl LockDevice {
         updates.lock_luz.map(|lock_luz| self.lock_luz = lock_luz);
         updates.lock_tranca.map(|lock_tranca| self.lock_tranca = lock_tranca);
         updates.lock_alarme.map(|lock_alarme| self.lock_alarme = lock_alarme);
-        updates.lock_cortinas.map(|lock_cortinas| self.lock_cortinas = lock_cortinas);
+        updates.lock_janelas.map(|lock_janelas| self.lock_janelas = lock_janelas);
         updates.lock_robo.map(|lock_robo| self.lock_robo = lock_robo);
         updates.lock_cafeteira.map(|lock_cafeteira| self.lock_cafeteira = lock_cafeteira);
         updates.lock_ar_condicionado.map(|lock_ar_condicionado| self.lock_ar_condicionado = lock_ar_condicionado);
@@ -274,14 +316,15 @@ impl LockDevice {
     }
 
     fn device_is_locked(&self, device_to_update: UpdateData) -> Result<bool, String> {
+
         if !device_to_update.luz.is_none(){
             Ok(self.lock_luz)
         } else if !device_to_update.tranca.is_none(){
             Ok(self.lock_tranca)
         } else if !device_to_update.alarme.is_none(){
             Ok(self.lock_alarme)
-        } else if !device_to_update.cortinas.is_none(){
-            Ok(self.lock_cortinas)
+        } else if !device_to_update.janelas.is_none(){
+            Ok(self.lock_janelas)
         } else if !device_to_update.robo.is_none(){
             Ok(self.lock_robo)
         } else if !device_to_update.cafeteira.is_none(){
@@ -302,16 +345,16 @@ impl LockDevice {
     fn return_data(&self) -> HashMap<String, bool> {
         let mut data = HashMap::new();
         // Insere o estado de cada dispositivo no mapa.
-        data.insert("lock_luz".to_string(), self.lock_luz);
-        data.insert("lock_tranca".to_string(), self.lock_tranca);
-        data.insert("lock_alarme".to_string(), self.lock_alarme);
-        data.insert("lock_cortinas".to_string(), self.lock_cortinas);
-        data.insert("lock_robo".to_string(), self.lock_robo);
-        data.insert("lock_cafeteira".to_string(), self.lock_cafeteira);
-        data.insert("lock_ar_condicionado".to_string(), self.lock_ar_condicionado);
-        data.insert("lock_aquecedor".to_string(), self.lock_aquecedor);
-        data.insert("lock_caixa_de_som".to_string(), self.lock_caixa_de_som);
-        data.insert("lock_televisao".to_string(), self.lock_televisao);
+        data.insert("luz".to_string(), self.lock_luz);
+        data.insert("tranca".to_string(), self.lock_tranca);
+        data.insert("alarme".to_string(), self.lock_alarme);
+        data.insert("janelas".to_string(), self.lock_janelas);
+        data.insert("robo".to_string(), self.lock_robo);
+        data.insert("cafeteira".to_string(), self.lock_cafeteira);
+        data.insert("ar_condicionado".to_string(), self.lock_ar_condicionado);
+        data.insert("aquecedor".to_string(), self.lock_aquecedor);
+        data.insert("caixa_de_som".to_string(), self.lock_caixa_de_som);
+        data.insert("televisao".to_string(), self.lock_televisao);
         data
     }
 
@@ -324,6 +367,7 @@ struct ResponseData {
     devices_status: HashMap<String, bool>,  // Estado atual dos dispositivos em forma de mapa.
     hora_atual: i32,  // Hora atual no relógio do sistema.
     temp_atual: f64,  // Temperatura atual no sistema.
+    prec_atual: f64,
     authenticated: bool,  // Indica se o usuário está autenticado ou não.
 }
 
@@ -339,6 +383,7 @@ async fn get_data(data: web::Data<Mutex<AppState>>) -> impl Responder {
         devices_status: state.automacao_residencial.return_data(),
         hora_atual: state.clock_atual.hour,
         temp_atual: state.temperatura_atual.temp,
+        prec_atual: state.temperatura_atual.prec,
         authenticated: state.authenticated,
     })
 }
@@ -349,7 +394,7 @@ struct UpdateData {
     luz: Option<bool>,  // Opcional: estado da luz (true para ligada, false para desligada).
     tranca: Option<bool>,  // Opcional: estado da tranca.
     alarme: Option<bool>,  // Opcional: estado do alarme.
-    cortinas: Option<bool>,  // Opcional: estado das cortinas.
+    janelas: Option<bool>,  // Opcional: estado das janelas.
     robo: Option<bool>,  // Opcional: estado do robô.
     cafeteira: Option<bool>,  // Opcional: estado da cafeteira.
     ar_condicionado: Option<bool>,  // Opcional: estado do ar-condicionado.
@@ -374,13 +419,14 @@ async fn update_data(state: web::Data<Mutex<AppState>>, new_data: web::Json<Upda
     web::Json(state.automacao_residencial.return_data())
 }
 
+
 // Define uma estrutura para deserializar dados recebidos em requisições de atualização.
 #[derive(Deserialize)]
 struct UpdateLockData {
     lock_luz: Option<bool>,  // Opcional: estado do bloqueio da luz (true para bloqueado, false para desbloqueado).
     lock_tranca: Option<bool>,  // Opcional: estado do bloqueio da tranca.
     lock_alarme: Option<bool>,  // Opcional: estado do bloqueio do alarme.
-    lock_cortinas: Option<bool>,  // Opcional: estado do bloqueio das cortinas.
+    lock_janelas: Option<bool>,  // Opcional: estado do bloqueio das janelas.
     lock_robo: Option<bool>,  // Opcional: estado do bloqueio do robô.
     lock_cafeteira: Option<bool>,  // Opcional: estado do bloqueio da cafeteira.
     lock_ar_condicionado: Option<bool>,  // Opcional: estado do bloqueio do ar-condicionado.
@@ -445,8 +491,8 @@ struct LoginResponse {
 async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>) -> impl Responder {
     // Bloqueia o estado para modificação segura.
     let mut state = state.lock().unwrap();
-    // Verifica se a senha fornecida é uma das senhas cadastradas.
-    if state.passwords.contains(&data.password) {
+    // Verifica se a senha fornecida na solicitação é igual à senha correta armazenada.
+    if data.password == state.correct_password {
         // Chama a função para ajustar os dispositivos para um estado de "acesso garantido".
         state.automacao_residencial.acesso_garantido();
         // Marca o usuário como autenticado.
@@ -457,6 +503,7 @@ async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>)
             devices_status: state.automacao_residencial.return_data(),
             hora_atual: state.clock_atual.hour,
             temp_atual: state.temperatura_atual.temp,
+            prec_atual: state.temperatura_atual.prec,
             authenticated: state.authenticated,
         })
     } else {
@@ -504,8 +551,6 @@ struct AppState {
     temperatura_atual: Temperatura,
     // Campo booleano que indica se um usuário está autenticado ou não.
     authenticated: bool,
-    // Lista de senhas permitidas para o acesso
-    passwords: Vec<String>,
 }
 
 // Anotação para indicar que a função `main` deve ser executada em um ambiente assíncrono usando `actix_web`.
@@ -520,11 +565,10 @@ async fn main() -> std::io::Result<()> {
     let state = web::Data::new(Mutex::new(AppState {
         automacao_residencial: AutomacaoResidencial::new(),  // Inicializa a configuração dos dispositivos residenciais.
         lock_devices: LockDevice::new(), // Inicializa a configuração para desbloquear os dispositivos residenciais.           
-        correct_password: String::from("master123"),  // Define a senha mestra para registro.
+        correct_password: String::from("1234"),  // Define a senha correta para autenticação.
         clock_atual: Clock::new(),  // Inicializa o relógio.
         temperatura_atual: Temperatura::new(),  // Inicializa a temperatura.
-        authenticated: false,  // Estado inicial de autenticação é definido como falso.
-        passwords: Vec::new(),  // Inicializa a lista de senhas permitidas.
+        authenticated: false  // Estado inicial de autenticação é definido como falso.
     }));
 
     // Cria um clone do estado para uso em uma thread separada.
@@ -540,8 +584,10 @@ async fn main() -> std::io::Result<()> {
             state.clock_atual.increment_hour();
             let hora_atual = state.clock_atual.hour;
             // Atualiza a temperatura com base na hora atual.
-            state.temperatura_atual.alterar_temp(hora_atual);
+            state.temperatura_atual.alterar_temp("INMET_CO_DF_A001_BRASILIA_01-01-2023_A_31-12-2023_corrigido.CSV");
             let ultima_temp = state.temperatura_atual.temp;
+            let ultima_prec = state.temperatura_atual.prec;
+            state.automacao_residencial.precipitacao(ultima_prec);
             // Se autenticado, ajusta o termostato e altera o estado baseado se está dormindo ou acordado.
             if state.authenticated {
                 state.automacao_residencial.termostato(ultima_temp);
@@ -560,27 +606,9 @@ async fn main() -> std::io::Result<()> {
             .route("/api/lock_device", web::put().to(lock_device)) // Rota para bloquear o dispositivo
             .route("/api/login", web::post().to(login))  // Rota para login.
             .route("/api/logout", web::post().to(logout))  // Rota para logout.
-            .route("/api/register", web::post().to(register))  // Rota para registrar novas senhas.
-            .route("/api/set_mode", web::post().to(set_mode)) // Rota para mudar o modo dos dispositivos.
+            .route("/api/set_mode", web::post().to(set_mode))
     })
     .bind("127.0.0.1:8080")?  // Define o endereço e porta onde o servidor deve escutar.
     .run()  // Inicia o servidor para escutar por requisições.
     .await  // Aguarda o servidor terminar de rodar.
-}
-
-// Função assíncrona para processar uma solicitação de registro.
-#[derive(Deserialize)]
-struct NewPassword {
-    password: String,
-    master_password: String,
-}
-
-async fn register(data: web::Json<NewPassword>, state: web::Data<Mutex<AppState>>) -> impl Responder {
-    let mut state = state.lock().unwrap();
-    if data.master_password == state.correct_password {
-        state.passwords.push(data.password.clone());
-        HttpResponse::Ok().json(json!({"message": "Password added successfully"}))
-    } else {
-        HttpResponse::Unauthorized().json(json!({"message": "Invalid master password"}))
-    }
 }
