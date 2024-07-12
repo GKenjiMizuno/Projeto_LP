@@ -3,13 +3,40 @@ use actix_cors::Cors;  // Biblioteca para manipulação de Cross-Origin Resource
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};  // Importa componentes principais do Actix-Web para construir o servidor HTTP.
 use serde::{Serialize, Deserialize};  // Bibliotecas para serialização e deserialização de dados (útil para JSON).
 use std::{collections::HashMap, env, sync::Mutex, thread, time::Duration};  // Bibliotecas padrão do Rust para manipulação de variáveis de ambiente, sincronização, threads e tempo.
-use rand::{self, distributions::Standard, Rng};  // Biblioteca para geração de números aleatórios.
+use rand::{self, Rng};  // Biblioteca para geração de números aleatórios.
 use serde_json::json;  // Importação da macro json para facilitar a criação de objetos JSON.
 extern crate env_logger;  // Biblioteca para configuração de logs baseada em variáveis de ambiente.
 use std::error::Error;
 use std::fs::File;
 use std::path::Path;
-use csv::{ReaderBuilder, Trim}; // Importa o enum Trim
+use csv::Trim; // Importa o enum Trim
+use std::collections::HashSet;
+
+#[derive(Serialize, Deserialize, Clone)]
+struct RegisterRequest {
+    master_password: String,
+    new_password: String,
+}
+
+#[derive(Serialize)]
+struct RegisterResponse {
+    message: String,
+}
+
+// Rota para registro de novas senhas
+async fn register(data: web::Json<RegisterRequest>, state: web::Data<Mutex<AppState>>) -> impl Responder {
+    let mut state = state.lock().unwrap();
+    if data.master_password == state.master_password {
+        state.users.insert(data.new_password.clone());
+        HttpResponse::Ok().json(RegisterResponse {
+            message: String::from("Nova senha registrada com sucesso!"),
+        })
+    } else {
+        HttpResponse::Unauthorized().json(RegisterResponse {
+            message: String::from("Invalid master password"),
+        })
+    }
+}
 
 // Definição de uma estrutura de dados para representar um relógio simples.
 #[derive(Serialize, Clone)]
@@ -79,7 +106,6 @@ impl Temperatura {
             // Incrementa o contador de linha
             current_line += 1;
             
-
             // Verifica se o contador de linha alcançou o valor desejado
             if current_line == self.contador {
                 // Processa cada campo do registro
@@ -260,13 +286,13 @@ impl AutomacaoResidencial {
         } else if mode_to_change.modo == "musica".to_string() {
             self.caixa_de_som = true;
             self.luz = true;
-        }else {
+        } else {
             // pass
         }
     }
 }
 
-// Definição de uma estrutura de dados para representar se o dispositivo está bloquado ou desbloqueado. Se estiver bloqueado,
+// Definição de uma estrutura de dados para representar se o dispositivo está bloqueado ou desbloqueado. Se estiver bloqueado,
 // o dispositivo não pode ser atualizado.
 #[derive(Serialize, Clone)]
 struct LockDevice {
@@ -419,7 +445,6 @@ async fn update_data(state: web::Data<Mutex<AppState>>, new_data: web::Json<Upda
     web::Json(state.automacao_residencial.return_data())
 }
 
-
 // Define uma estrutura para deserializar dados recebidos em requisições de atualização.
 #[derive(Deserialize)]
 struct UpdateLockData {
@@ -445,6 +470,7 @@ async fn device_is_locked(state: web::Data<Mutex<AppState>>, new_data: UpdateDat
     };
     return b;
 }
+
 // Função assíncrona para bloquear o dispositivo
 async fn lock_device(state: web::Data<Mutex<AppState>>, new_data: web::Json<UpdateLockData>) -> impl Responder {
     // Bloqueia o estado para modificação.
@@ -454,6 +480,7 @@ async fn lock_device(state: web::Data<Mutex<AppState>>, new_data: web::Json<Upda
     // Retorna o estado atualizado dos dispositivos bloqueados como JSON
     web::Json(state.lock_devices.return_data())
 }
+
 #[derive(Deserialize)]
 struct ChangeMode {
     modo: String,
@@ -491,15 +518,15 @@ struct LoginResponse {
 async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>) -> impl Responder {
     // Bloqueia o estado para modificação segura.
     let mut state = state.lock().unwrap();
-    // Verifica se a senha fornecida na solicitação é igual à senha correta armazenada.
-    if data.password == state.correct_password {
+    // Verifica se a senha fornecida na solicitação é igual a uma das senhas registradas.
+    if data.password == state.correct_password || state.users.contains(&data.password) {
         // Chama a função para ajustar os dispositivos para um estado de "acesso garantido".
         state.automacao_residencial.acesso_garantido();
         // Marca o usuário como autenticado.
         state.authenticated = true;
         // Retorna uma resposta HTTP positiva com os dados relevantes.
         HttpResponse::Ok().json(ResponseData { 
-            message: String::from("Login successful"),
+            message: String::from("Sucesso!"),
             devices_status: state.automacao_residencial.return_data(),
             hora_atual: state.clock_atual.hour,
             temp_atual: state.temperatura_atual.temp,
@@ -509,7 +536,7 @@ async fn login(data: web::Json<LoginRequest>, state: web::Data<Mutex<AppState>>)
     } else {
         // Retorna uma resposta HTTP de não autorizado se a senha for incorreta.
         HttpResponse::Unauthorized().json(LoginResponse {
-            message: String::from("Invalid password"),
+            message: String::from("Senha Inválida."),
             authenticated: false,
             devices_status: AutomacaoResidencial::new(),
             hora_atual: Clock::new(),
@@ -530,10 +557,10 @@ async fn logout(request: web::Json<LogoutRequest>, state: web::Data<Mutex<AppSta
         // Marca o usuário como não autenticado.
         state.authenticated = false;
         // Retorna uma resposta HTTP positiva indicando sucesso no logout.
-        HttpResponse::Ok().json(json!({"message": "Logout successful and home secured."}))
+        HttpResponse::Ok().json(json!({"message": "Logout feito com sucesso!."}))
     } else {
         // Retorna uma resposta HTTP de não autorizado se o usuário não estava autenticado.
-        HttpResponse::Unauthorized().json(json!({"message": "Logout failed: user not authenticated."}))
+        HttpResponse::Unauthorized().json(json!({"message": "Logout falho: usuário não autenticado"}))
     }
 }
 
@@ -551,6 +578,10 @@ struct AppState {
     temperatura_atual: Temperatura,
     // Campo booleano que indica se um usuário está autenticado ou não.
     authenticated: bool,
+    // Campo para armazenar a senha master para registrar novas senhas.
+    master_password: String,
+    // Conjunto de senhas registradas.
+    users: HashSet<String>,  
 }
 
 // Anotação para indicar que a função `main` deve ser executada em um ambiente assíncrono usando `actix_web`.
@@ -568,7 +599,9 @@ async fn main() -> std::io::Result<()> {
         correct_password: String::from("1234"),  // Define a senha correta para autenticação.
         clock_atual: Clock::new(),  // Inicializa o relógio.
         temperatura_atual: Temperatura::new(),  // Inicializa a temperatura.
-        authenticated: false  // Estado inicial de autenticação é definido como falso.
+        authenticated: false,  // Estado inicial de autenticação é definido como falso.
+        users: HashSet::new(),  // Inicializa o conjunto de senhas registradas.
+        master_password: String::from("master1234"),  // Define a senha master.
     }));
 
     // Cria um clone do estado para uso em uma thread separada.
@@ -584,7 +617,7 @@ async fn main() -> std::io::Result<()> {
             state.clock_atual.increment_hour();
             let hora_atual = state.clock_atual.hour;
             // Atualiza a temperatura com base na hora atual.
-            state.temperatura_atual.alterar_temp("INMET_CO_DF_A001_BRASILIA_01-01-2023_A_31-12-2023_corrigido.CSV");
+            state.temperatura_atual.alterar_temp("INMET_CO_DF_A001_BRASILIA_01-01-2023_A_31-12-2023_corrigido.CSV").ok();
             let ultima_temp = state.temperatura_atual.temp;
             let ultima_prec = state.temperatura_atual.prec;
             state.automacao_residencial.precipitacao(ultima_prec);
@@ -607,6 +640,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/login", web::post().to(login))  // Rota para login.
             .route("/api/logout", web::post().to(logout))  // Rota para logout.
             .route("/api/set_mode", web::post().to(set_mode))
+            .route("/api/register", web::post().to(register))  // Adiciona a rota para registro
     })
     .bind("127.0.0.1:8080")?  // Define o endereço e porta onde o servidor deve escutar.
     .run()  // Inicia o servidor para escutar por requisições.

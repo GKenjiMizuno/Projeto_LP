@@ -1,1 +1,1 @@
-/home/gabriel-mizuno/Área\ de\ trabalho/Gabriel/UNB/8\ Semestre/LP/Projeto_LP/rust_backend/target/debug/rust_backend: /home/gabriel-mizuno/Área\ de\ trabalho/Gabriel/UNB/8\ Semestre/LP/Projeto_LP/rust_backend/src/main.rs
+C:\Users\bibie\OneDrive\Área\ de\ Trabalho\Unb\8\ Semestre\LP\Trabalho_LP2\Projeto_LP\rust_backend\target\debug\rust_backend.exe: C:\Users\bibie\OneDrive\Área\ de\ Trabalho\Unb\8\ Semestre\LP\Trabalho_LP2\Projeto_LP\rust_backend\src\main.rs

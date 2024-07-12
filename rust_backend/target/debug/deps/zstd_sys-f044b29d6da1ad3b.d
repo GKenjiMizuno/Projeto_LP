@@ -1,0 +1,9 @@
+C:\Users\bibie\OneDrive\Área de Trabalho\Unb\8 Semestre\LP\Trabalho_LP2\Projeto_LP\rust_backend\target\debug\deps\libzstd_sys-f044b29d6da1ad3b.rmeta: C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\lib.rs C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zstd.rs C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zdict.rs
+
+C:\Users\bibie\OneDrive\Área de Trabalho\Unb\8 Semestre\LP\Trabalho_LP2\Projeto_LP\rust_backend\target\debug\deps\libzstd_sys-f044b29d6da1ad3b.rlib: C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\lib.rs C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zstd.rs C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zdict.rs
+
+C:\Users\bibie\OneDrive\Área de Trabalho\Unb\8 Semestre\LP\Trabalho_LP2\Projeto_LP\rust_backend\target\debug\deps\zstd_sys-f044b29d6da1ad3b.d: C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\lib.rs C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zstd.rs C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zdict.rs
+
+C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\lib.rs:
+C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zstd.rs:
+C:\Users\bibie\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zstd-sys-2.0.11+zstd.1.5.6\src\bindings_zdict.rs:
